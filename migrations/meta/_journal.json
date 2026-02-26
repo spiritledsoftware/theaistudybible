@@ -218,6 +218,13 @@
       "when": 1743762241150,
       "tag": "0030_wet_inertia",
       "breakpoints": true
+    },
+    {
+      "idx": 31,
+      "version": "6",
+      "when": 1772085600000,
+      "tag": "0031_fine_study_loop",
+      "breakpoints": true
     }
   ]
 }

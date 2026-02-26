@@ -54,6 +54,7 @@ export const usersRelations = relations(users, ({ one, many }) => ({
   devotionReactions: many(devotionReactions),
   chapterBookmarks: many(chapterBookmarks),
   chapterNotes: many(chapterNotes),
+  dailyStudySessions: many(dailyStudySessions),
   verseHighlights: many(verseHighlights),
   verseNotes: many(verseNotes),
 }));
@@ -1229,6 +1230,49 @@ export const chaptersToSourceDocumentsRelations = relations(
     }),
   }),
 );
+
+export const dailyStudySessions = sqliteTable(
+  'daily_study_sessions',
+  {
+    ...baseModel,
+    userId: text('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    goal: text('goal').notNull(),
+    passageOrTopic: text('passage_or_topic').notNull(),
+    passageContext: text('passage_context').notNull(),
+    conciseExplanation: text('concise_explanation').notNull(),
+    reflectionPrompt: text('reflection_prompt').notNull(),
+    notes: text('notes').notNull().default(''),
+    recap: text('recap'),
+    startTime: timestamp('start_time').notNull(),
+    endTime: timestamp('end_time'),
+    returnedWithin7Days: integer('returned_within_7_days', { mode: 'boolean' })
+      .notNull()
+      .default(false),
+    dailyActiveStudyBaseline: integer('daily_active_study_baseline', { mode: 'boolean' })
+      .notNull()
+      .default(true),
+    status: text('status', { enum: ['active', 'completed', 'failed'] })
+      .notNull()
+      .default('active'),
+    failureReason: text('failure_reason'),
+  },
+  (table) => [
+    index('daily_study_sessions_user_id_idx').on(table.userId),
+    index('daily_study_sessions_start_time_idx').on(table.startTime),
+    index('daily_study_sessions_end_time_idx').on(table.endTime),
+    index('daily_study_sessions_returned_within_7_days_idx').on(table.returnedWithin7Days),
+    index('daily_study_sessions_status_idx').on(table.status),
+  ],
+);
+
+export const dailyStudySessionsRelations = relations(dailyStudySessions, ({ one }) => ({
+  user: one(users, {
+    fields: [dailyStudySessions.userId],
+    references: [users.id],
+  }),
+}));
 
 export const readingSessions = sqliteTable(
   'reading_sessions',

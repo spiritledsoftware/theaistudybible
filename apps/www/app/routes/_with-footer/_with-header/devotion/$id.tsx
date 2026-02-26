@@ -2,6 +2,7 @@ import { db } from '@/core/database';
 import { toTitleCase } from '@/core/utils/string';
 import { DevotionMenu } from '@/www/components/devotions/menu';
 import { DevotionSidebar, getDevotionsQueryOptions } from '@/www/components/devotions/sidebar';
+import { DailyStudyLoopCard } from '@/www/components/devotions/daily-study-loop';
 import { QueryBoundary } from '@/www/components/query-boundary';
 import { Button } from '@/www/components/ui/button';
 import { Markdown } from '@/www/components/ui/markdown';
@@ -110,6 +111,7 @@ function RouteComponent() {
                           alt='Illustration for the devotion'
                         />
                       )}
+                      <DailyStudyLoopCard />
                       <div className='flex flex-col gap-2 text-center'>
                         <H2 className='inline-block bg-linear-to-r from-primary to-accent-foreground bg-clip-text text-transparent dark:from-accent-foreground dark:to-secondary-foreground'>
                           Reading
