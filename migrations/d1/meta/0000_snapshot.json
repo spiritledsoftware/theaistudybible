@@ -1,0 +1,4657 @@
+{
+  "version": "6",
+  "dialect": "sqlite",
+  "id": "e6a17eb5-84d0-4151-8212-b73ba32af202",
+  "prevId": "00000000-0000-0000-0000-000000000000",
+  "tables": {
+    "bible_contributors": {
+      "name": "bible_contributors",
+      "columns": {
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "uid": {
+          "name": "uid",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "content": {
+          "name": "content",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
+        },
+        "publication": {
+          "name": "publication",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
+        },
+        "management": {
+          "name": "management",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
+        },
+        "finance": {
+          "name": "finance",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
+        },
+        "qa": {
+          "name": "qa",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
+        }
+      },
+      "indexes": {
+        "bible_contributors_name_idx": {
+          "name": "bible_contributors_name_idx",
+          "columns": [
+            "name"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "bible_countries": {
+      "name": "bible_countries",
+      "columns": {
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "iso": {
+          "name": "iso",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "bible_countries_name_idx": {
+          "name": "bible_countries_name_idx",
+          "columns": [
+            "name"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "bible_languages": {
+      "name": "bible_languages",
+      "columns": {
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "iso": {
+          "name": "iso",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "name_local": {
+          "name": "name_local",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "script": {
+          "name": "script",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "script_code": {
+          "name": "script_code",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "script_direction": {
+          "name": "script_direction",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "ldml": {
+          "name": "ldml",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "rod": {
+          "name": "rod",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "numerals": {
+          "name": "numerals",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "bible_languages_name_idx": {
+          "name": "bible_languages_name_idx",
+          "columns": [
+            "name"
+          ],
+          "isUnique": false
+        },
+        "bible_languages_name_local_idx": {
+          "name": "bible_languages_name_local_idx",
+          "columns": [
+            "name_local"
+          ],
+          "isUnique": false
+        },
+        "bible_languages_script_code_idx": {
+          "name": "bible_languages_script_code_idx",
+          "columns": [
+            "script_code"
+          ],
+          "isUnique": false
+        },
+        "bible_languages_script_direction_idx": {
+          "name": "bible_languages_script_direction_idx",
+          "columns": [
+            "script_direction"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "bible_rights_admins": {
+      "name": "bible_rights_admins",
+      "columns": {
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "uid": {
+          "name": "uid",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "url": {
+          "name": "url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "bible_rights_admins_name_idx": {
+          "name": "bible_rights_admins_name_idx",
+          "columns": [
+            "name"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "bible_rights_holders": {
+      "name": "bible_rights_holders",
+      "columns": {
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "uid": {
+          "name": "uid",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "name_local": {
+          "name": "name_local",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "abbr": {
+          "name": "abbr",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "url": {
+          "name": "url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "bible_rights_holders_name_idx": {
+          "name": "bible_rights_holders_name_idx",
+          "columns": [
+            "name"
+          ],
+          "isUnique": false
+        },
+        "bible_rights_holders_abbr_idx": {
+          "name": "bible_rights_holders_abbr_idx",
+          "columns": [
+            "abbr"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "bibles": {
+      "name": "bibles",
+      "columns": {
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "abbreviation": {
+          "name": "abbreviation",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "abbreviation_local": {
+          "name": "abbreviation_local",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "name_local": {
+          "name": "name_local",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "copyright_statement": {
+          "name": "copyright_statement",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "ready_for_publication": {
+          "name": "ready_for_publication",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
+        }
+      },
+      "indexes": {
+        "bibles_abbreviation_local_idx": {
+          "name": "bibles_abbreviation_local_idx",
+          "columns": [
+            "abbreviation_local"
+          ],
+          "isUnique": false
+        },
+        "bibles_name_idx": {
+          "name": "bibles_name_idx",
+          "columns": [
+            "name"
+          ],
+          "isUnique": false
+        },
+        "bibles_name_local_idx": {
+          "name": "bibles_name_local_idx",
+          "columns": [
+            "name_local"
+          ],
+          "isUnique": false
+        },
+        "bibles_ready_for_publication_idx": {
+          "name": "bibles_ready_for_publication_idx",
+          "columns": [
+            "ready_for_publication"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "bibles_to_contributors": {
+      "name": "bibles_to_contributors",
+      "columns": {
+        "bible_abbreviation": {
+          "name": "bible_abbreviation",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "contributor_uid": {
+          "name": "contributor_uid",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "bibles_to_contributors_bible_abbreviation_idx": {
+          "name": "bibles_to_contributors_bible_abbreviation_idx",
+          "columns": [
+            "bible_abbreviation"
+          ],
+          "isUnique": false
+        },
+        "bibles_to_contributors_contributor_uid_idx": {
+          "name": "bibles_to_contributors_contributor_uid_idx",
+          "columns": [
+            "contributor_uid"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "bibles_to_contributors_bible_abbreviation_bibles_abbreviation_fk": {
+          "name": "bibles_to_contributors_bible_abbreviation_bibles_abbreviation_fk",
+          "tableFrom": "bibles_to_contributors",
+          "tableTo": "bibles",
+          "columnsFrom": [
+            "bible_abbreviation"
+          ],
+          "columnsTo": [
+            "abbreviation"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "bibles_to_contributors_contributor_uid_bible_contributors_uid_fk": {
+          "name": "bibles_to_contributors_contributor_uid_bible_contributors_uid_fk",
+          "tableFrom": "bibles_to_contributors",
+          "tableTo": "bible_contributors",
+          "columnsFrom": [
+            "contributor_uid"
+          ],
+          "columnsTo": [
+            "uid"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "bibles_to_contributors_bible_abbreviation_contributor_uid_pk": {
+          "columns": [
+            "bible_abbreviation",
+            "contributor_uid"
+          ],
+          "name": "bibles_to_contributors_bible_abbreviation_contributor_uid_pk"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "bibles_to_countries": {
+      "name": "bibles_to_countries",
+      "columns": {
+        "bible_abbreviation": {
+          "name": "bible_abbreviation",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "country_iso": {
+          "name": "country_iso",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "bibles_to_countries_bible_abbreviation_idx": {
+          "name": "bibles_to_countries_bible_abbreviation_idx",
+          "columns": [
+            "bible_abbreviation"
+          ],
+          "isUnique": false
+        },
+        "bibles_to_countries_country_iso_idx": {
+          "name": "bibles_to_countries_country_iso_idx",
+          "columns": [
+            "country_iso"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "bibles_to_countries_bible_abbreviation_bibles_abbreviation_fk": {
+          "name": "bibles_to_countries_bible_abbreviation_bibles_abbreviation_fk",
+          "tableFrom": "bibles_to_countries",
+          "tableTo": "bibles",
+          "columnsFrom": [
+            "bible_abbreviation"
+          ],
+          "columnsTo": [
+            "abbreviation"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "bibles_to_countries_country_iso_bible_countries_iso_fk": {
+          "name": "bibles_to_countries_country_iso_bible_countries_iso_fk",
+          "tableFrom": "bibles_to_countries",
+          "tableTo": "bible_countries",
+          "columnsFrom": [
+            "country_iso"
+          ],
+          "columnsTo": [
+            "iso"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "bibles_to_countries_bible_abbreviation_country_iso_pk": {
+          "columns": [
+            "bible_abbreviation",
+            "country_iso"
+          ],
+          "name": "bibles_to_countries_bible_abbreviation_country_iso_pk"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "bibles_to_languages": {
+      "name": "bibles_to_languages",
+      "columns": {
+        "bible_abbreviation": {
+          "name": "bible_abbreviation",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "language_iso": {
+          "name": "language_iso",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "bibles_to_languages_bible_abbreviation_idx": {
+          "name": "bibles_to_languages_bible_abbreviation_idx",
+          "columns": [
+            "bible_abbreviation"
+          ],
+          "isUnique": false
+        },
+        "bibles_to_languages_language_iso_idx": {
+          "name": "bibles_to_languages_language_iso_idx",
+          "columns": [
+            "language_iso"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "bibles_to_languages_bible_abbreviation_bibles_abbreviation_fk": {
+          "name": "bibles_to_languages_bible_abbreviation_bibles_abbreviation_fk",
+          "tableFrom": "bibles_to_languages",
+          "tableTo": "bibles",
+          "columnsFrom": [
+            "bible_abbreviation"
+          ],
+          "columnsTo": [
+            "abbreviation"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "bibles_to_languages_language_iso_bible_languages_iso_fk": {
+          "name": "bibles_to_languages_language_iso_bible_languages_iso_fk",
+          "tableFrom": "bibles_to_languages",
+          "tableTo": "bible_languages",
+          "columnsFrom": [
+            "language_iso"
+          ],
+          "columnsTo": [
+            "iso"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "bibles_to_languages_bible_abbreviation_language_iso_pk": {
+          "columns": [
+            "bible_abbreviation",
+            "language_iso"
+          ],
+          "name": "bibles_to_languages_bible_abbreviation_language_iso_pk"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "bibles_to_rights_admins": {
+      "name": "bibles_to_rights_admins",
+      "columns": {
+        "bible_abbreviation": {
+          "name": "bible_abbreviation",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "rights_admin_uid": {
+          "name": "rights_admin_uid",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "bibles_to_rights_admins_bible_abbreviation_idx": {
+          "name": "bibles_to_rights_admins_bible_abbreviation_idx",
+          "columns": [
+            "bible_abbreviation"
+          ],
+          "isUnique": false
+        },
+        "bibles_to_rights_admins_rights_admin_uid_idx": {
+          "name": "bibles_to_rights_admins_rights_admin_uid_idx",
+          "columns": [
+            "rights_admin_uid"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "bibles_to_rights_admins_bible_abbreviation_bibles_abbreviation_fk": {
+          "name": "bibles_to_rights_admins_bible_abbreviation_bibles_abbreviation_fk",
+          "tableFrom": "bibles_to_rights_admins",
+          "tableTo": "bibles",
+          "columnsFrom": [
+            "bible_abbreviation"
+          ],
+          "columnsTo": [
+            "abbreviation"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "bibles_to_rights_admins_rights_admin_uid_bible_rights_admins_uid_fk": {
+          "name": "bibles_to_rights_admins_rights_admin_uid_bible_rights_admins_uid_fk",
+          "tableFrom": "bibles_to_rights_admins",
+          "tableTo": "bible_rights_admins",
+          "columnsFrom": [
+            "rights_admin_uid"
+          ],
+          "columnsTo": [
+            "uid"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "bibles_to_rights_admins_bible_abbreviation_rights_admin_uid_pk": {
+          "columns": [
+            "bible_abbreviation",
+            "rights_admin_uid"
+          ],
+          "name": "bibles_to_rights_admins_bible_abbreviation_rights_admin_uid_pk"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "bibles_to_rights_holders": {
+      "name": "bibles_to_rights_holders",
+      "columns": {
+        "bible_abbreviation": {
+          "name": "bible_abbreviation",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "rights_holder_uid": {
+          "name": "rights_holder_uid",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "bibles_to_rights_holders_bible_abbreviation_idx": {
+          "name": "bibles_to_rights_holders_bible_abbreviation_idx",
+          "columns": [
+            "bible_abbreviation"
+          ],
+          "isUnique": false
+        },
+        "bibles_to_rights_holders_rights_holder_uid_idx": {
+          "name": "bibles_to_rights_holders_rights_holder_uid_idx",
+          "columns": [
+            "rights_holder_uid"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "bibles_to_rights_holders_bible_abbreviation_bibles_abbreviation_fk": {
+          "name": "bibles_to_rights_holders_bible_abbreviation_bibles_abbreviation_fk",
+          "tableFrom": "bibles_to_rights_holders",
+          "tableTo": "bibles",
+          "columnsFrom": [
+            "bible_abbreviation"
+          ],
+          "columnsTo": [
+            "abbreviation"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "bibles_to_rights_holders_rights_holder_uid_bible_rights_holders_uid_fk": {
+          "name": "bibles_to_rights_holders_rights_holder_uid_bible_rights_holders_uid_fk",
+          "tableFrom": "bibles_to_rights_holders",
+          "tableTo": "bible_rights_holders",
+          "columnsFrom": [
+            "rights_holder_uid"
+          ],
+          "columnsTo": [
+            "uid"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "bibles_to_rights_holders_bible_abbreviation_rights_holder_uid_pk": {
+          "columns": [
+            "bible_abbreviation",
+            "rights_holder_uid"
+          ],
+          "name": "bibles_to_rights_holders_bible_abbreviation_rights_holder_uid_pk"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "books": {
+      "name": "books",
+      "columns": {
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "bible_abbreviation": {
+          "name": "bible_abbreviation",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "previous_code": {
+          "name": "previous_code",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "next_code": {
+          "name": "next_code",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "number": {
+          "name": "number",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "code": {
+          "name": "code",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "abbreviation": {
+          "name": "abbreviation",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "short_name": {
+          "name": "short_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "long_name": {
+          "name": "long_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "books_bible_abbreviation_idx": {
+          "name": "books_bible_abbreviation_idx",
+          "columns": [
+            "bible_abbreviation"
+          ],
+          "isUnique": false
+        },
+        "books_previous_code_idx": {
+          "name": "books_previous_code_idx",
+          "columns": [
+            "previous_code"
+          ],
+          "isUnique": false
+        },
+        "books_next_code_idx": {
+          "name": "books_next_code_idx",
+          "columns": [
+            "next_code"
+          ],
+          "isUnique": false
+        },
+        "books_number_idx": {
+          "name": "books_number_idx",
+          "columns": [
+            "number"
+          ],
+          "isUnique": false
+        },
+        "books_code_idx": {
+          "name": "books_code_idx",
+          "columns": [
+            "code"
+          ],
+          "isUnique": false
+        },
+        "books_abbreviation_idx": {
+          "name": "books_abbreviation_idx",
+          "columns": [
+            "abbreviation"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "books_bible_abbreviation_bibles_abbreviation_fk": {
+          "name": "books_bible_abbreviation_bibles_abbreviation_fk",
+          "tableFrom": "books",
+          "tableTo": "bibles",
+          "columnsFrom": [
+            "bible_abbreviation"
+          ],
+          "columnsTo": [
+            "abbreviation"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "books_unique_bible_code_pk": {
+          "columns": [
+            "bible_abbreviation",
+            "code"
+          ],
+          "name": "books_unique_bible_code_pk"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "chapter_bookmarks": {
+      "name": "chapter_bookmarks",
+      "columns": {
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "bible_abbreviation": {
+          "name": "bible_abbreviation",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "chapter_code": {
+          "name": "chapter_code",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "chapter_bookmarks_bible_abbreviation_idx": {
+          "name": "chapter_bookmarks_bible_abbreviation_idx",
+          "columns": [
+            "bible_abbreviation"
+          ],
+          "isUnique": false
+        },
+        "chapter_bookmarks_chapter_code_idx": {
+          "name": "chapter_bookmarks_chapter_code_idx",
+          "columns": [
+            "chapter_code"
+          ],
+          "isUnique": false
+        },
+        "chapter_bookmarks_user_id_idx": {
+          "name": "chapter_bookmarks_user_id_idx",
+          "columns": [
+            "user_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "chapter_bookmarks_bible_abbreviation_bibles_abbreviation_fk": {
+          "name": "chapter_bookmarks_bible_abbreviation_bibles_abbreviation_fk",
+          "tableFrom": "chapter_bookmarks",
+          "tableTo": "bibles",
+          "columnsFrom": [
+            "bible_abbreviation"
+          ],
+          "columnsTo": [
+            "abbreviation"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "chapter_bookmarks_user_id_users_id_fk": {
+          "name": "chapter_bookmarks_user_id_users_id_fk",
+          "tableFrom": "chapter_bookmarks",
+          "tableTo": "users",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "chapter_bookmarks_bible_abbreviation_chapter_code_chapters_bible_abbreviation_code_fk": {
+          "name": "chapter_bookmarks_bible_abbreviation_chapter_code_chapters_bible_abbreviation_code_fk",
+          "tableFrom": "chapter_bookmarks",
+          "tableTo": "chapters",
+          "columnsFrom": [
+            "bible_abbreviation",
+            "chapter_code"
+          ],
+          "columnsTo": [
+            "bible_abbreviation",
+            "code"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "chapter_bookmarks_bible_abbreviation_chapter_code_user_id_pk": {
+          "columns": [
+            "bible_abbreviation",
+            "chapter_code",
+            "user_id"
+          ],
+          "name": "chapter_bookmarks_bible_abbreviation_chapter_code_user_id_pk"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "chapter_notes": {
+      "name": "chapter_notes",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "bible_abbreviation": {
+          "name": "bible_abbreviation",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "chapter_code": {
+          "name": "chapter_code",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "content": {
+          "name": "content",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "chapter_notes_bible_abbreviation_idx": {
+          "name": "chapter_notes_bible_abbreviation_idx",
+          "columns": [
+            "bible_abbreviation"
+          ],
+          "isUnique": false
+        },
+        "chapter_notes_chapter_code_idx": {
+          "name": "chapter_notes_chapter_code_idx",
+          "columns": [
+            "chapter_code"
+          ],
+          "isUnique": false
+        },
+        "chapter_notes_user_id_idx": {
+          "name": "chapter_notes_user_id_idx",
+          "columns": [
+            "user_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "chapter_notes_bible_abbreviation_bibles_abbreviation_fk": {
+          "name": "chapter_notes_bible_abbreviation_bibles_abbreviation_fk",
+          "tableFrom": "chapter_notes",
+          "tableTo": "bibles",
+          "columnsFrom": [
+            "bible_abbreviation"
+          ],
+          "columnsTo": [
+            "abbreviation"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "chapter_notes_user_id_users_id_fk": {
+          "name": "chapter_notes_user_id_users_id_fk",
+          "tableFrom": "chapter_notes",
+          "tableTo": "users",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "chapter_notes_bible_abbreviation_chapter_code_chapters_bible_abbreviation_code_fk": {
+          "name": "chapter_notes_bible_abbreviation_chapter_code_chapters_bible_abbreviation_code_fk",
+          "tableFrom": "chapter_notes",
+          "tableTo": "chapters",
+          "columnsFrom": [
+            "bible_abbreviation",
+            "chapter_code"
+          ],
+          "columnsTo": [
+            "bible_abbreviation",
+            "code"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "chapters": {
+      "name": "chapters",
+      "columns": {
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "bible_abbreviation": {
+          "name": "bible_abbreviation",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "book_code": {
+          "name": "book_code",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "previous_code": {
+          "name": "previous_code",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "next_code": {
+          "name": "next_code",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "code": {
+          "name": "code",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "number": {
+          "name": "number",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "content": {
+          "name": "content",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "chapters_bible_abbreviation_idx": {
+          "name": "chapters_bible_abbreviation_idx",
+          "columns": [
+            "bible_abbreviation"
+          ],
+          "isUnique": false
+        },
+        "chapters_book_code_idx": {
+          "name": "chapters_book_code_idx",
+          "columns": [
+            "book_code"
+          ],
+          "isUnique": false
+        },
+        "chapters_previous_code_idx": {
+          "name": "chapters_previous_code_idx",
+          "columns": [
+            "previous_code"
+          ],
+          "isUnique": false
+        },
+        "chapters_next_code_idx": {
+          "name": "chapters_next_code_idx",
+          "columns": [
+            "next_code"
+          ],
+          "isUnique": false
+        },
+        "chapters_code_idx": {
+          "name": "chapters_code_idx",
+          "columns": [
+            "code"
+          ],
+          "isUnique": false
+        },
+        "chapters_name_idx": {
+          "name": "chapters_name_idx",
+          "columns": [
+            "name"
+          ],
+          "isUnique": false
+        },
+        "chapters_number_idx": {
+          "name": "chapters_number_idx",
+          "columns": [
+            "number"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "chapters_bible_abbreviation_bibles_abbreviation_fk": {
+          "name": "chapters_bible_abbreviation_bibles_abbreviation_fk",
+          "tableFrom": "chapters",
+          "tableTo": "bibles",
+          "columnsFrom": [
+            "bible_abbreviation"
+          ],
+          "columnsTo": [
+            "abbreviation"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "chapters_bible_abbreviation_book_code_books_bible_abbreviation_code_fk": {
+          "name": "chapters_bible_abbreviation_book_code_books_bible_abbreviation_code_fk",
+          "tableFrom": "chapters",
+          "tableTo": "books",
+          "columnsFrom": [
+            "bible_abbreviation",
+            "book_code"
+          ],
+          "columnsTo": [
+            "bible_abbreviation",
+            "code"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "chapters_unique_bible_code_pk": {
+          "columns": [
+            "bible_abbreviation",
+            "code"
+          ],
+          "name": "chapters_unique_bible_code_pk"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "chapters_to_source_documents": {
+      "name": "chapters_to_source_documents",
+      "columns": {
+        "bible_abbreviation": {
+          "name": "bible_abbreviation",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "chapter_code": {
+          "name": "chapter_code",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "source_document_id": {
+          "name": "source_document_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "chapters_to_source_documents_bible_abbreviation_idx": {
+          "name": "chapters_to_source_documents_bible_abbreviation_idx",
+          "columns": [
+            "bible_abbreviation"
+          ],
+          "isUnique": false
+        },
+        "chapters_to_source_documents_chapter_code_idx": {
+          "name": "chapters_to_source_documents_chapter_code_idx",
+          "columns": [
+            "chapter_code"
+          ],
+          "isUnique": false
+        },
+        "chapters_to_source_documents_source_document_id_idx": {
+          "name": "chapters_to_source_documents_source_document_id_idx",
+          "columns": [
+            "source_document_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "chapters_to_source_documents_bible_abbreviation_bibles_abbreviation_fk": {
+          "name": "chapters_to_source_documents_bible_abbreviation_bibles_abbreviation_fk",
+          "tableFrom": "chapters_to_source_documents",
+          "tableTo": "bibles",
+          "columnsFrom": [
+            "bible_abbreviation"
+          ],
+          "columnsTo": [
+            "abbreviation"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "chapters_to_source_documents_source_document_id_source_documents_id_fk": {
+          "name": "chapters_to_source_documents_source_document_id_source_documents_id_fk",
+          "tableFrom": "chapters_to_source_documents",
+          "tableTo": "source_documents",
+          "columnsFrom": [
+            "source_document_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "chapters_to_source_documents_bible_abbreviation_chapter_code_chapters_bible_abbreviation_code_fk": {
+          "name": "chapters_to_source_documents_bible_abbreviation_chapter_code_chapters_bible_abbreviation_code_fk",
+          "tableFrom": "chapters_to_source_documents",
+          "tableTo": "chapters",
+          "columnsFrom": [
+            "bible_abbreviation",
+            "chapter_code"
+          ],
+          "columnsTo": [
+            "bible_abbreviation",
+            "code"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "chapters_to_source_documents_bible_abbreviation_chapter_code_source_document_id_pk": {
+          "columns": [
+            "bible_abbreviation",
+            "chapter_code",
+            "source_document_id"
+          ],
+          "name": "chapters_to_source_documents_bible_abbreviation_chapter_code_source_document_id_pk"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "chats": {
+      "name": "chats",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'New Chat'"
+        },
+        "custom_name": {
+          "name": "custom_name",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
+        }
+      },
+      "indexes": {
+        "chats_user_id_idx": {
+          "name": "chats_user_id_idx",
+          "columns": [
+            "user_id"
+          ],
+          "isUnique": false
+        },
+        "chats_name_idx": {
+          "name": "chats_name_idx",
+          "columns": [
+            "name"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "christian_tradition_approvals": {
+      "name": "christian_tradition_approvals",
+      "columns": {
+        "tradition": {
+          "name": "tradition",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "framing_guide_version": {
+          "name": "framing_guide_version",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "corpus_version": {
+          "name": "corpus_version",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "test_suite_version": {
+          "name": "test_suite_version",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "approved_at": {
+          "name": "approved_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "reviewer_one_id": {
+          "name": "reviewer_one_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "reviewer_two_id": {
+          "name": "reviewer_two_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "christian_tradition_approvals_reviewer_one_idx": {
+          "name": "christian_tradition_approvals_reviewer_one_idx",
+          "columns": [
+            "reviewer_one_id"
+          ],
+          "isUnique": false
+        },
+        "christian_tradition_approvals_reviewer_two_idx": {
+          "name": "christian_tradition_approvals_reviewer_two_idx",
+          "columns": [
+            "reviewer_two_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "christian_tradition_approvals_reviewer_one_id_users_id_fk": {
+          "name": "christian_tradition_approvals_reviewer_one_id_users_id_fk",
+          "tableFrom": "christian_tradition_approvals",
+          "tableTo": "users",
+          "columnsFrom": [
+            "reviewer_one_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "christian_tradition_approvals_reviewer_two_id_users_id_fk": {
+          "name": "christian_tradition_approvals_reviewer_two_id_users_id_fk",
+          "tableFrom": "christian_tradition_approvals",
+          "tableTo": "users",
+          "columnsFrom": [
+            "reviewer_two_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "data_sources": {
+      "name": "data_sources",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "url": {
+          "name": "url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "type": {
+          "name": "type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "metadata": {
+          "name": "metadata",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'{}'"
+        },
+        "version": {
+          "name": "version",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'unspecified'"
+        },
+        "checksum": {
+          "name": "checksum",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "rights_basis": {
+          "name": "rights_basis",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "attribution": {
+          "name": "attribution",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "tradition_classification": {
+          "name": "tradition_classification",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'[]'"
+        },
+        "approval_status": {
+          "name": "approval_status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'PENDING'"
+        },
+        "approved_at": {
+          "name": "approved_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "approved_by": {
+          "name": "approved_by",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "number_of_documents": {
+          "name": "number_of_documents",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "sync_schedule": {
+          "name": "sync_schedule",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'NEVER'"
+        },
+        "last_manual_sync": {
+          "name": "last_manual_sync",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "last_automatic_sync": {
+          "name": "last_automatic_sync",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "data_sources_name_key": {
+          "name": "data_sources_name_key",
+          "columns": [
+            "name"
+          ],
+          "isUnique": true
+        },
+        "data_sources_type_idx": {
+          "name": "data_sources_type_idx",
+          "columns": [
+            "type"
+          ],
+          "isUnique": false
+        },
+        "data_sources_metadata_idx": {
+          "name": "data_sources_metadata_idx",
+          "columns": [
+            "metadata"
+          ],
+          "isUnique": false
+        },
+        "data_sources_last_manual_sync_idx": {
+          "name": "data_sources_last_manual_sync_idx",
+          "columns": [
+            "last_manual_sync"
+          ],
+          "isUnique": false
+        },
+        "data_sources_last_automatic_sync_idx": {
+          "name": "data_sources_last_automatic_sync_idx",
+          "columns": [
+            "last_automatic_sync"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "data_sources_approved_by_users_id_fk": {
+          "name": "data_sources_approved_by_users_id_fk",
+          "tableFrom": "data_sources",
+          "tableTo": "users",
+          "columnsFrom": [
+            "approved_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "data_sources_to_source_documents": {
+      "name": "data_sources_to_source_documents",
+      "columns": {
+        "data_source_id": {
+          "name": "data_source_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "source_document_id": {
+          "name": "source_document_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "data_sources_to_source_documents_data_source_id_idx": {
+          "name": "data_sources_to_source_documents_data_source_id_idx",
+          "columns": [
+            "data_source_id"
+          ],
+          "isUnique": false
+        },
+        "data_sources_to_source_documents_source_document_id_idx": {
+          "name": "data_sources_to_source_documents_source_document_id_idx",
+          "columns": [
+            "source_document_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "data_sources_to_source_documents_data_source_id_data_sources_id_fk": {
+          "name": "data_sources_to_source_documents_data_source_id_data_sources_id_fk",
+          "tableFrom": "data_sources_to_source_documents",
+          "tableTo": "data_sources",
+          "columnsFrom": [
+            "data_source_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "data_sources_to_source_documents_source_document_id_source_documents_id_fk": {
+          "name": "data_sources_to_source_documents_source_document_id_source_documents_id_fk",
+          "tableFrom": "data_sources_to_source_documents",
+          "tableTo": "source_documents",
+          "columnsFrom": [
+            "source_document_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "data_sources_to_source_documents_data_source_id_source_document_id_pk": {
+          "columns": [
+            "data_source_id",
+            "source_document_id"
+          ],
+          "name": "data_sources_to_source_documents_data_source_id_source_document_id_pk"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "devotion_images": {
+      "name": "devotion_images",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "devotion_id": {
+          "name": "devotion_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "url": {
+          "name": "url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "prompt": {
+          "name": "prompt",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "negative_prompt": {
+          "name": "negative_prompt",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "caption": {
+          "name": "caption",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "devotion_images_devotion_id_idx": {
+          "name": "devotion_images_devotion_id_idx",
+          "columns": [
+            "devotion_id"
+          ],
+          "isUnique": false
+        },
+        "devotion_images_caption_idx": {
+          "name": "devotion_images_caption_idx",
+          "columns": [
+            "caption"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "devotion_images_devotion_id_devotions_id_fk": {
+          "name": "devotion_images_devotion_id_devotions_id_fk",
+          "tableFrom": "devotion_images",
+          "tableTo": "devotions",
+          "columnsFrom": [
+            "devotion_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "devotion_reactions": {
+      "name": "devotion_reactions",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "devotion_id": {
+          "name": "devotion_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "reaction": {
+          "name": "reaction",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "comment": {
+          "name": "comment",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "devotion_reactions_unique_user_idx": {
+          "name": "devotion_reactions_unique_user_idx",
+          "columns": [
+            "devotion_id",
+            "user_id"
+          ],
+          "isUnique": true
+        },
+        "devotion_reactions_devotion_id_idx": {
+          "name": "devotion_reactions_devotion_id_idx",
+          "columns": [
+            "devotion_id"
+          ],
+          "isUnique": false
+        },
+        "devotion_reactions_user_id_idx": {
+          "name": "devotion_reactions_user_id_idx",
+          "columns": [
+            "user_id"
+          ],
+          "isUnique": false
+        },
+        "devotion_reactions_reaction_idx": {
+          "name": "devotion_reactions_reaction_idx",
+          "columns": [
+            "reaction"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "devotion_reactions_devotion_id_devotions_id_fk": {
+          "name": "devotion_reactions_devotion_id_devotions_id_fk",
+          "tableFrom": "devotion_reactions",
+          "tableTo": "devotions",
+          "columnsFrom": [
+            "devotion_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "devotion_reactions_user_id_users_id_fk": {
+          "name": "devotion_reactions_user_id_users_id_fk",
+          "tableFrom": "devotion_reactions",
+          "tableTo": "users",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "devotions": {
+      "name": "devotions",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "topic": {
+          "name": "topic",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'general'"
+        },
+        "bible_reading": {
+          "name": "bible_reading",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "summary": {
+          "name": "summary",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "reflection": {
+          "name": "reflection",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "prayer": {
+          "name": "prayer",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "dive_deeper_queries": {
+          "name": "dive_deeper_queries",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'[]'"
+        },
+        "publication_status": {
+          "name": "publication_status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'PENDING'"
+        },
+        "validation_errors": {
+          "name": "validation_errors",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'[]'"
+        },
+        "failed": {
+          "name": "failed",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
+        }
+      },
+      "indexes": {
+        "devotions_topic_idx": {
+          "name": "devotions_topic_idx",
+          "columns": [
+            "topic"
+          ],
+          "isUnique": false
+        },
+        "devotions_created_at_idx": {
+          "name": "devotions_created_at_idx",
+          "columns": [
+            "created_at"
+          ],
+          "isUnique": false
+        },
+        "devotions_publication_status_idx": {
+          "name": "devotions_publication_status_idx",
+          "columns": [
+            "publication_status"
+          ],
+          "isUnique": false
+        },
+        "devotions_failed_idx": {
+          "name": "devotions_failed_idx",
+          "columns": [
+            "failed"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "devotions_to_source_documents": {
+      "name": "devotions_to_source_documents",
+      "columns": {
+        "devotion_id": {
+          "name": "devotion_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "source_document_id": {
+          "name": "source_document_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "distance": {
+          "name": "distance",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "distance_metric": {
+          "name": "distance_metric",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'cosine'"
+        }
+      },
+      "indexes": {
+        "devotions_to_source_documents_devotion_id_idx": {
+          "name": "devotions_to_source_documents_devotion_id_idx",
+          "columns": [
+            "devotion_id"
+          ],
+          "isUnique": false
+        },
+        "devotions_to_source_documents_source_document_id_idx": {
+          "name": "devotions_to_source_documents_source_document_id_idx",
+          "columns": [
+            "source_document_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "devotions_to_source_documents_devotion_id_devotions_id_fk": {
+          "name": "devotions_to_source_documents_devotion_id_devotions_id_fk",
+          "tableFrom": "devotions_to_source_documents",
+          "tableTo": "devotions",
+          "columnsFrom": [
+            "devotion_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "devotions_to_source_documents_source_document_id_source_documents_id_fk": {
+          "name": "devotions_to_source_documents_source_document_id_source_documents_id_fk",
+          "tableFrom": "devotions_to_source_documents",
+          "tableTo": "source_documents",
+          "columnsFrom": [
+            "source_document_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "devotions_to_source_documents_devotion_id_source_document_id_pk": {
+          "columns": [
+            "devotion_id",
+            "source_document_id"
+          ],
+          "name": "devotions_to_source_documents_devotion_id_source_document_id_pk"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "forgotten_password_codes": {
+      "name": "forgotten_password_codes",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "userId": {
+          "name": "userId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "code": {
+          "name": "code",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "expires_at": {
+          "name": "expires_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "forgotten_password_codes_code_idx": {
+          "name": "forgotten_password_codes_code_idx",
+          "columns": [
+            "code"
+          ],
+          "isUnique": false
+        },
+        "forgotten_password_codes_user_id_idx": {
+          "name": "forgotten_password_codes_user_id_idx",
+          "columns": [
+            "userId"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "forgotten_password_codes_userId_users_id_fk": {
+          "name": "forgotten_password_codes_userId_users_id_fk",
+          "tableFrom": "forgotten_password_codes",
+          "tableTo": "users",
+          "columnsFrom": [
+            "userId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "index_operations": {
+      "name": "index_operations",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "data_source_id": {
+          "name": "data_source_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "metadata": {
+          "name": "metadata",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'{}'"
+        },
+        "error_messages": {
+          "name": "error_messages",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'[]'"
+        }
+      },
+      "indexes": {
+        "index_operation_data_source_id_idx": {
+          "name": "index_operation_data_source_id_idx",
+          "columns": [
+            "data_source_id"
+          ],
+          "isUnique": false
+        },
+        "index_operation_status_idx": {
+          "name": "index_operation_status_idx",
+          "columns": [
+            "status"
+          ],
+          "isUnique": false
+        },
+        "index_operation_metadata_idx": {
+          "name": "index_operation_metadata_idx",
+          "columns": [
+            "metadata"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "index_operations_data_source_id_data_sources_id_fk": {
+          "name": "index_operations_data_source_id_data_sources_id_fk",
+          "tableFrom": "index_operations",
+          "tableTo": "data_sources",
+          "columnsFrom": [
+            "data_source_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "message_reactions": {
+      "name": "message_reactions",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "message_id": {
+          "name": "message_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "reaction": {
+          "name": "reaction",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "comment": {
+          "name": "comment",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "message_reactions_unique_user_idx": {
+          "name": "message_reactions_unique_user_idx",
+          "columns": [
+            "message_id",
+            "user_id"
+          ],
+          "isUnique": true
+        },
+        "message_reactions_message_id_idx": {
+          "name": "message_reactions_message_id_idx",
+          "columns": [
+            "message_id"
+          ],
+          "isUnique": false
+        },
+        "message_reactions_user_id_idx": {
+          "name": "message_reactions_user_id_idx",
+          "columns": [
+            "user_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "message_reactions_message_id_messages_id_fk": {
+          "name": "message_reactions_message_id_messages_id_fk",
+          "tableFrom": "message_reactions",
+          "tableTo": "messages",
+          "columnsFrom": [
+            "message_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "message_reactions_user_id_users_id_fk": {
+          "name": "message_reactions_user_id_users_id_fk",
+          "tableFrom": "message_reactions",
+          "tableTo": "users",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "messages": {
+      "name": "messages",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "chat_id": {
+          "name": "chat_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "origin_message_id": {
+          "name": "origin_message_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "content": {
+          "name": "content",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "''"
+        },
+        "reasoning": {
+          "name": "reasoning",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "tool_call_id": {
+          "name": "tool_call_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "role": {
+          "name": "role",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "data": {
+          "name": "data",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "annotations": {
+          "name": "annotations",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "tool_invocations": {
+          "name": "tool_invocations",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "finish_reason": {
+          "name": "finish_reason",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "attachments": {
+          "name": "attachments",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "parts": {
+          "name": "parts",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "anonymous": {
+          "name": "anonymous",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
+        },
+        "regenerated": {
+          "name": "regenerated",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
+        }
+      },
+      "indexes": {
+        "messages_chat_id_idx": {
+          "name": "messages_chat_id_idx",
+          "columns": [
+            "chat_id"
+          ],
+          "isUnique": false
+        },
+        "messages_user_id_idx": {
+          "name": "messages_user_id_idx",
+          "columns": [
+            "user_id"
+          ],
+          "isUnique": false
+        },
+        "messages_origin_message_id_idx": {
+          "name": "messages_origin_message_id_idx",
+          "columns": [
+            "origin_message_id"
+          ],
+          "isUnique": false
+        },
+        "messages_role_idx": {
+          "name": "messages_role_idx",
+          "columns": [
+            "role"
+          ],
+          "isUnique": false
+        },
+        "messages_content_idx": {
+          "name": "messages_content_idx",
+          "columns": [
+            "content"
+          ],
+          "isUnique": false
+        },
+        "messages_finish_reason_idx": {
+          "name": "messages_finish_reason_idx",
+          "columns": [
+            "finish_reason"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "messages_chat_id_chats_id_fk": {
+          "name": "messages_chat_id_chats_id_fk",
+          "tableFrom": "messages",
+          "tableTo": "chats",
+          "columnsFrom": [
+            "chat_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "messages_origin_message_id_messages_id_fk": {
+          "name": "messages_origin_message_id_messages_id_fk",
+          "tableFrom": "messages",
+          "tableTo": "messages",
+          "columnsFrom": [
+            "origin_message_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "origin_message_reference": {
+          "name": "origin_message_reference",
+          "tableFrom": "messages",
+          "tableTo": "messages",
+          "columnsFrom": [
+            "origin_message_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "messages_to_source_documents": {
+      "name": "messages_to_source_documents",
+      "columns": {
+        "message_id": {
+          "name": "message_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "source_document_id": {
+          "name": "source_document_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "distance": {
+          "name": "distance",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "distance_metric": {
+          "name": "distance_metric",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'cosine'"
+        }
+      },
+      "indexes": {
+        "messages_to_source_documents_message_id_idx": {
+          "name": "messages_to_source_documents_message_id_idx",
+          "columns": [
+            "message_id"
+          ],
+          "isUnique": false
+        },
+        "messages_to_source_documents_source_document_id_idx": {
+          "name": "messages_to_source_documents_source_document_id_idx",
+          "columns": [
+            "source_document_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "messages_to_source_documents_message_id_messages_id_fk": {
+          "name": "messages_to_source_documents_message_id_messages_id_fk",
+          "tableFrom": "messages_to_source_documents",
+          "tableTo": "messages",
+          "columnsFrom": [
+            "message_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "messages_to_source_documents_source_document_id_source_documents_id_fk": {
+          "name": "messages_to_source_documents_source_document_id_source_documents_id_fk",
+          "tableFrom": "messages_to_source_documents",
+          "tableTo": "source_documents",
+          "columnsFrom": [
+            "source_document_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "messages_to_source_documents_message_id_source_document_id_pk": {
+          "columns": [
+            "message_id",
+            "source_document_id"
+          ],
+          "name": "messages_to_source_documents_message_id_source_document_id_pk"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "passkey_credential": {
+      "name": "passkey_credential",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "blob",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "algorithm_id": {
+          "name": "algorithm_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "public_key": {
+          "name": "public_key",
+          "type": "blob",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "passkey_credential_user_id_idx": {
+          "name": "passkey_credential_user_id_idx",
+          "columns": [
+            "user_id"
+          ],
+          "isUnique": false
+        },
+        "passkey_credential_algorithm_id_idx": {
+          "name": "passkey_credential_algorithm_id_idx",
+          "columns": [
+            "algorithm_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "passkey_credential_user_id_users_id_fk": {
+          "name": "passkey_credential_user_id_users_id_fk",
+          "tableFrom": "passkey_credential",
+          "tableTo": "users",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "passwords": {
+      "name": "passwords",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "userId": {
+          "name": "userId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "hash": {
+          "name": "hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "active": {
+          "name": "active",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": true
+        }
+      },
+      "indexes": {
+        "passwords_user_id_idx": {
+          "name": "passwords_user_id_idx",
+          "columns": [
+            "userId"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "passwords_userId_users_id_fk": {
+          "name": "passwords_userId_users_id_fk",
+          "tableFrom": "passwords",
+          "tableTo": "users",
+          "columnsFrom": [
+            "userId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "push_subscriptions": {
+      "name": "push_subscriptions",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "endpoint": {
+          "name": "endpoint",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "p256dh": {
+          "name": "p256dh",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "auth": {
+          "name": "auth",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "push_subscriptions_endpoint_idx": {
+          "name": "push_subscriptions_endpoint_idx",
+          "columns": [
+            "endpoint"
+          ],
+          "isUnique": true
+        },
+        "push_subscriptions_user_id_idx": {
+          "name": "push_subscriptions_user_id_idx",
+          "columns": [
+            "user_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "push_subscriptions_user_id_users_id_fk": {
+          "name": "push_subscriptions_user_id_users_id_fk",
+          "tableFrom": "push_subscriptions",
+          "tableTo": "users",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "queue_deliveries": {
+      "name": "queue_deliveries",
+      "columns": {
+        "key": {
+          "name": "key",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "queue": {
+          "name": "queue",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "message_id": {
+          "name": "message_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "processed_at": {
+          "name": "processed_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "queue_deliveries_queue_message_idx": {
+          "name": "queue_deliveries_queue_message_idx",
+          "columns": [
+            "queue",
+            "message_id"
+          ],
+          "isUnique": true
+        },
+        "queue_deliveries_processed_at_idx": {
+          "name": "queue_deliveries_processed_at_idx",
+          "columns": [
+            "processed_at"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "reading_sessions": {
+      "name": "reading_sessions",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "start_time": {
+          "name": "start_time",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "end_time": {
+          "name": "end_time",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "reading_sessions_user_id_idx": {
+          "name": "reading_sessions_user_id_idx",
+          "columns": [
+            "user_id"
+          ],
+          "isUnique": false
+        },
+        "reading_sessions_start_time_idx": {
+          "name": "reading_sessions_start_time_idx",
+          "columns": [
+            "start_time"
+          ],
+          "isUnique": false
+        },
+        "reading_sessions_end_time_idx": {
+          "name": "reading_sessions_end_time_idx",
+          "columns": [
+            "end_time"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "reading_sessions_user_id_users_id_fk": {
+          "name": "reading_sessions_user_id_users_id_fk",
+          "tableFrom": "reading_sessions",
+          "tableTo": "users",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "roles": {
+      "name": "roles",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "roles_name_idx": {
+          "name": "roles_name_idx",
+          "columns": [
+            "name"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "sessions": {
+      "name": "sessions",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "userId": {
+          "name": "userId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "expires_at": {
+          "name": "expires_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "sessions_user_id_idx": {
+          "name": "sessions_user_id_idx",
+          "columns": [
+            "userId"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "sessions_userId_users_id_fk": {
+          "name": "sessions_userId_users_id_fk",
+          "tableFrom": "sessions",
+          "tableTo": "users",
+          "columnsFrom": [
+            "userId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "share_chat_options": {
+      "name": "share_chat_options",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "chat_id": {
+          "name": "chat_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "chat_share_options_chat_id_idx": {
+          "name": "chat_share_options_chat_id_idx",
+          "columns": [
+            "chat_id"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "share_chat_options_chat_id_chats_id_fk": {
+          "name": "share_chat_options_chat_id_chats_id_fk",
+          "tableFrom": "share_chat_options",
+          "tableTo": "chats",
+          "columnsFrom": [
+            "chat_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "source_documents": {
+      "name": "source_documents",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "user_generated_images": {
+      "name": "user_generated_images",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "message_id": {
+          "name": "message_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "url": {
+          "name": "url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "user_prompt": {
+          "name": "user_prompt",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "prompt": {
+          "name": "prompt",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "negative_prompt": {
+          "name": "negative_prompt",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "search_queries": {
+          "name": "search_queries",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'[]'"
+        },
+        "failed": {
+          "name": "failed",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
+        }
+      },
+      "indexes": {
+        "user_generated_images_user_id_idx": {
+          "name": "user_generated_images_user_id_idx",
+          "columns": [
+            "user_id"
+          ],
+          "isUnique": false
+        },
+        "user_generated_images_message_id_idx": {
+          "name": "user_generated_images_message_id_idx",
+          "columns": [
+            "message_id"
+          ],
+          "isUnique": false
+        },
+        "user_generated_images_user_prompt_idx": {
+          "name": "user_generated_images_user_prompt_idx",
+          "columns": [
+            "user_prompt"
+          ],
+          "isUnique": false
+        },
+        "user_generated_images_failed_idx": {
+          "name": "user_generated_images_failed_idx",
+          "columns": [
+            "failed"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "user_generated_images_user_id_users_id_fk": {
+          "name": "user_generated_images_user_id_users_id_fk",
+          "tableFrom": "user_generated_images",
+          "tableTo": "users",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "user_generated_images_message_id_messages_id_fk": {
+          "name": "user_generated_images_message_id_messages_id_fk",
+          "tableFrom": "user_generated_images",
+          "tableTo": "messages",
+          "columnsFrom": [
+            "message_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "user_generated_images_reactions": {
+      "name": "user_generated_images_reactions",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "user_generated_image_id": {
+          "name": "user_generated_image_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "reaction": {
+          "name": "reaction",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "comment": {
+          "name": "comment",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "user_generated_image_reaction_idx": {
+          "name": "user_generated_image_reaction_idx",
+          "columns": [
+            "user_generated_image_id",
+            "user_id"
+          ],
+          "isUnique": true
+        },
+        "user_generated_images_reactions_user_generated_image_id_idx": {
+          "name": "user_generated_images_reactions_user_generated_image_id_idx",
+          "columns": [
+            "user_generated_image_id"
+          ],
+          "isUnique": false
+        },
+        "user_generated_images_reactions_user_id_idx": {
+          "name": "user_generated_images_reactions_user_id_idx",
+          "columns": [
+            "user_id"
+          ],
+          "isUnique": false
+        },
+        "user_generated_images_reactions_reaction_idx": {
+          "name": "user_generated_images_reactions_reaction_idx",
+          "columns": [
+            "reaction"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "user_generated_images_reactions_user_generated_image_id_user_generated_images_id_fk": {
+          "name": "user_generated_images_reactions_user_generated_image_id_user_generated_images_id_fk",
+          "tableFrom": "user_generated_images_reactions",
+          "tableTo": "user_generated_images",
+          "columnsFrom": [
+            "user_generated_image_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "user_generated_images_reactions_user_id_users_id_fk": {
+          "name": "user_generated_images_reactions_user_id_users_id_fk",
+          "tableFrom": "user_generated_images_reactions",
+          "tableTo": "users",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "user_generated_images_to_source_documents": {
+      "name": "user_generated_images_to_source_documents",
+      "columns": {
+        "user_generated_image_id": {
+          "name": "user_generated_image_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "source_document_id": {
+          "name": "source_document_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "distance": {
+          "name": "distance",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "distance_metric": {
+          "name": "distance_metric",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'cosine'"
+        }
+      },
+      "indexes": {
+        "user_generated_images_to_source_documents_user_generated_image_id_idx": {
+          "name": "user_generated_images_to_source_documents_user_generated_image_id_idx",
+          "columns": [
+            "user_generated_image_id"
+          ],
+          "isUnique": false
+        },
+        "user_generated_images_to_source_documents_source_document_id_idx": {
+          "name": "user_generated_images_to_source_documents_source_document_id_idx",
+          "columns": [
+            "source_document_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "user_generated_images_to_source_documents_user_generated_image_id_user_generated_images_id_fk": {
+          "name": "user_generated_images_to_source_documents_user_generated_image_id_user_generated_images_id_fk",
+          "tableFrom": "user_generated_images_to_source_documents",
+          "tableTo": "user_generated_images",
+          "columnsFrom": [
+            "user_generated_image_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "user_generated_images_to_source_documents_source_document_id_source_documents_id_fk": {
+          "name": "user_generated_images_to_source_documents_source_document_id_source_documents_id_fk",
+          "tableFrom": "user_generated_images_to_source_documents",
+          "tableTo": "source_documents",
+          "columnsFrom": [
+            "source_document_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "user_generated_images_to_source_documents_user_generated_image_id_source_document_id_pk": {
+          "columns": [
+            "user_generated_image_id",
+            "source_document_id"
+          ],
+          "name": "user_generated_images_to_source_documents_user_generated_image_id_source_document_id_pk"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "user_settings": {
+      "name": "user_settings",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "preferred_bible_abbreviation": {
+          "name": "preferred_bible_abbreviation",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "email_notifications": {
+          "name": "email_notifications",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": true
+        },
+        "ai_instructions": {
+          "name": "ai_instructions",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "christian_tradition": {
+          "name": "christian_tradition",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "user_settings_user_id_idx": {
+          "name": "user_settings_user_id_idx",
+          "columns": [
+            "user_id"
+          ],
+          "isUnique": true
+        },
+        "user_settings_preferred_bible_abbreviation_idx": {
+          "name": "user_settings_preferred_bible_abbreviation_idx",
+          "columns": [
+            "preferred_bible_abbreviation"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "user_settings_user_id_users_id_fk": {
+          "name": "user_settings_user_id_users_id_fk",
+          "tableFrom": "user_settings",
+          "tableTo": "users",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "user_settings_preferred_bible_abbreviation_bibles_abbreviation_fk": {
+          "name": "user_settings_preferred_bible_abbreviation_bibles_abbreviation_fk",
+          "tableFrom": "user_settings",
+          "tableTo": "bibles",
+          "columnsFrom": [
+            "preferred_bible_abbreviation"
+          ],
+          "columnsTo": [
+            "abbreviation"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "users": {
+      "name": "users",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "email": {
+          "name": "email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "first_name": {
+          "name": "first_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "last_name": {
+          "name": "last_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "image": {
+          "name": "image",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "stripe_customer_id": {
+          "name": "stripe_customer_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "google_id": {
+          "name": "google_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "apple_id": {
+          "name": "apple_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "users_email_idx": {
+          "name": "users_email_idx",
+          "columns": [
+            "email"
+          ],
+          "isUnique": true
+        },
+        "users_stripe_customer_id_idx": {
+          "name": "users_stripe_customer_id_idx",
+          "columns": [
+            "stripe_customer_id"
+          ],
+          "isUnique": false
+        },
+        "users_google_id_idx": {
+          "name": "users_google_id_idx",
+          "columns": [
+            "google_id"
+          ],
+          "isUnique": false
+        },
+        "users_apple_id_idx": {
+          "name": "users_apple_id_idx",
+          "columns": [
+            "apple_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "users_to_roles": {
+      "name": "users_to_roles",
+      "columns": {
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "role_id": {
+          "name": "role_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "users_to_roles_user_id_idx": {
+          "name": "users_to_roles_user_id_idx",
+          "columns": [
+            "user_id"
+          ],
+          "isUnique": false
+        },
+        "users_to_roles_role_id_idx": {
+          "name": "users_to_roles_role_id_idx",
+          "columns": [
+            "role_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "users_to_roles_user_id_users_id_fk": {
+          "name": "users_to_roles_user_id_users_id_fk",
+          "tableFrom": "users_to_roles",
+          "tableTo": "users",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "users_to_roles_role_id_roles_id_fk": {
+          "name": "users_to_roles_role_id_roles_id_fk",
+          "tableFrom": "users_to_roles",
+          "tableTo": "roles",
+          "columnsFrom": [
+            "role_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "users_to_roles_user_id_role_id_pk": {
+          "columns": [
+            "user_id",
+            "role_id"
+          ],
+          "name": "users_to_roles_user_id_role_id_pk"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "verse_highlights": {
+      "name": "verse_highlights",
+      "columns": {
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "bible_abbreviation": {
+          "name": "bible_abbreviation",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "verse_code": {
+          "name": "verse_code",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "color": {
+          "name": "color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "verse_highlights_bible_abbreviation_idx": {
+          "name": "verse_highlights_bible_abbreviation_idx",
+          "columns": [
+            "bible_abbreviation"
+          ],
+          "isUnique": false
+        },
+        "verse_highlights_verse_code_idx": {
+          "name": "verse_highlights_verse_code_idx",
+          "columns": [
+            "verse_code"
+          ],
+          "isUnique": false
+        },
+        "verse_highlights_user_id_idx": {
+          "name": "verse_highlights_user_id_idx",
+          "columns": [
+            "user_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "verse_highlights_bible_abbreviation_bibles_abbreviation_fk": {
+          "name": "verse_highlights_bible_abbreviation_bibles_abbreviation_fk",
+          "tableFrom": "verse_highlights",
+          "tableTo": "bibles",
+          "columnsFrom": [
+            "bible_abbreviation"
+          ],
+          "columnsTo": [
+            "abbreviation"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "verse_highlights_user_id_users_id_fk": {
+          "name": "verse_highlights_user_id_users_id_fk",
+          "tableFrom": "verse_highlights",
+          "tableTo": "users",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "verse_highlights_bible_abbreviation_verse_code_verses_bible_abbreviation_code_fk": {
+          "name": "verse_highlights_bible_abbreviation_verse_code_verses_bible_abbreviation_code_fk",
+          "tableFrom": "verse_highlights",
+          "tableTo": "verses",
+          "columnsFrom": [
+            "bible_abbreviation",
+            "verse_code"
+          ],
+          "columnsTo": [
+            "bible_abbreviation",
+            "code"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "verse_highlights_bible_abbreviation_verse_code_user_id_pk": {
+          "columns": [
+            "bible_abbreviation",
+            "verse_code",
+            "user_id"
+          ],
+          "name": "verse_highlights_bible_abbreviation_verse_code_user_id_pk"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "verse_notes": {
+      "name": "verse_notes",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "bible_abbreviation": {
+          "name": "bible_abbreviation",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "verse_code": {
+          "name": "verse_code",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "content": {
+          "name": "content",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "verse_notes_bible_abbreviation_idx": {
+          "name": "verse_notes_bible_abbreviation_idx",
+          "columns": [
+            "bible_abbreviation"
+          ],
+          "isUnique": false
+        },
+        "verse_notes_verse_code_idx": {
+          "name": "verse_notes_verse_code_idx",
+          "columns": [
+            "verse_code"
+          ],
+          "isUnique": false
+        },
+        "verse_notes_user_id_idx": {
+          "name": "verse_notes_user_id_idx",
+          "columns": [
+            "user_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "verse_notes_bible_abbreviation_bibles_abbreviation_fk": {
+          "name": "verse_notes_bible_abbreviation_bibles_abbreviation_fk",
+          "tableFrom": "verse_notes",
+          "tableTo": "bibles",
+          "columnsFrom": [
+            "bible_abbreviation"
+          ],
+          "columnsTo": [
+            "abbreviation"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "verse_notes_user_id_users_id_fk": {
+          "name": "verse_notes_user_id_users_id_fk",
+          "tableFrom": "verse_notes",
+          "tableTo": "users",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "verse_notes_bible_abbreviation_verse_code_verses_bible_abbreviation_code_fk": {
+          "name": "verse_notes_bible_abbreviation_verse_code_verses_bible_abbreviation_code_fk",
+          "tableFrom": "verse_notes",
+          "tableTo": "verses",
+          "columnsFrom": [
+            "bible_abbreviation",
+            "verse_code"
+          ],
+          "columnsTo": [
+            "bible_abbreviation",
+            "code"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "verses": {
+      "name": "verses",
+      "columns": {
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "bible_abbreviation": {
+          "name": "bible_abbreviation",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "book_code": {
+          "name": "book_code",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "chapter_code": {
+          "name": "chapter_code",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "previous_code": {
+          "name": "previous_code",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "next_code": {
+          "name": "next_code",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "code": {
+          "name": "code",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "number": {
+          "name": "number",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "content": {
+          "name": "content",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "verses_bible_abbreviation_idx": {
+          "name": "verses_bible_abbreviation_idx",
+          "columns": [
+            "bible_abbreviation"
+          ],
+          "isUnique": false
+        },
+        "verses_book_code_idx": {
+          "name": "verses_book_code_idx",
+          "columns": [
+            "book_code"
+          ],
+          "isUnique": false
+        },
+        "verses_chapter_code_idx": {
+          "name": "verses_chapter_code_idx",
+          "columns": [
+            "chapter_code"
+          ],
+          "isUnique": false
+        },
+        "verses_next_code_idx": {
+          "name": "verses_next_code_idx",
+          "columns": [
+            "next_code"
+          ],
+          "isUnique": false
+        },
+        "verses_code_idx": {
+          "name": "verses_code_idx",
+          "columns": [
+            "code"
+          ],
+          "isUnique": false
+        },
+        "verses_name_idx": {
+          "name": "verses_name_idx",
+          "columns": [
+            "name"
+          ],
+          "isUnique": false
+        },
+        "verses_number_idx": {
+          "name": "verses_number_idx",
+          "columns": [
+            "number"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "verses_bible_abbreviation_bibles_abbreviation_fk": {
+          "name": "verses_bible_abbreviation_bibles_abbreviation_fk",
+          "tableFrom": "verses",
+          "tableTo": "bibles",
+          "columnsFrom": [
+            "bible_abbreviation"
+          ],
+          "columnsTo": [
+            "abbreviation"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "verses_bible_abbreviation_book_code_books_bible_abbreviation_code_fk": {
+          "name": "verses_bible_abbreviation_book_code_books_bible_abbreviation_code_fk",
+          "tableFrom": "verses",
+          "tableTo": "books",
+          "columnsFrom": [
+            "bible_abbreviation",
+            "book_code"
+          ],
+          "columnsTo": [
+            "bible_abbreviation",
+            "code"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "verses_bible_abbreviation_chapter_code_chapters_bible_abbreviation_code_fk": {
+          "name": "verses_bible_abbreviation_chapter_code_chapters_bible_abbreviation_code_fk",
+          "tableFrom": "verses",
+          "tableTo": "chapters",
+          "columnsFrom": [
+            "bible_abbreviation",
+            "chapter_code"
+          ],
+          "columnsTo": [
+            "bible_abbreviation",
+            "code"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "verses_bible_abbreviation_code_pk": {
+          "columns": [
+            "bible_abbreviation",
+            "code"
+          ],
+          "name": "verses_bible_abbreviation_code_pk"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    }
+  },
+  "views": {},
+  "enums": {},
+  "_meta": {
+    "schemas": {},
+    "tables": {},
+    "columns": {}
+  },
+  "internal": {
+    "indexes": {}
+  }
+}

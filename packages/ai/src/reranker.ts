@@ -1,25 +1,19 @@
-import { Resource } from 'sst';
+import { env } from '@/core/env';
+import { PRIVATE_OPENROUTER_ROUTING } from './openrouter';
 import type { Document, DocumentWithScore } from './types/document';
 
-const voyageAiBaseUrl = 'https://api.voyageai.com/v1';
+const OPENROUTER_RERANK_URL = 'https://openrouter.ai/api/v1/rerank';
 
-type VoyageAiRerankResponse = {
-  object: 'list';
-  data: {
+type OpenRouterRerankResponse = {
+  results: {
     index: number;
     relevance_score: number;
   }[];
-  model: 'rerank-2' | 'rerank-2-lite';
-  usage: {
-    total_tokens: number;
-  };
 };
 
 export type RerankerOptions = {
-  model?: 'rerank-2' | 'rerank-2-lite';
+  model?: string;
   topK?: number;
-  returnDocuments?: boolean;
-  truncation?: boolean;
 };
 
 export class Reranker {
@@ -28,25 +22,29 @@ export class Reranker {
     documents: Document[],
     options?: RerankerOptions,
   ): Promise<DocumentWithScore[]> {
-    const response = await fetch(`${voyageAiBaseUrl}/rerank`, {
+    const response = await fetch(OPENROUTER_RERANK_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${Resource.VoyageAiApiKey.value}`,
+        Authorization: `Bearer ${env.OPENROUTER_API_KEY}`,
       },
       body: JSON.stringify({
-        model: options?.model ?? 'rerank-2-lite',
+        model: options?.model ?? env.OPENROUTER_RERANK_MODEL,
         query,
         documents: documents.map((document) => document.content),
-        top_k: options?.topK,
-        return_documents: options?.returnDocuments,
-        truncation: options?.truncation,
+        top_n: options?.topK,
+        return_documents: false,
+        provider: PRIVATE_OPENROUTER_ROUTING,
       }),
     });
     if (!response.ok) {
-      throw new Error(`Failed to rerank documents: ${response.statusText}`);
+      throw new Error(`Failed to rerank documents: ${response.status} ${response.statusText}`);
     }
-    const { data }: VoyageAiRerankResponse = await response.json();
-    return data.map((item) => ({ ...documents[item.index], score: item.relevance_score }));
+    const { results } = (await response.json()) as OpenRouterRerankResponse;
+    return results.map(({ index, relevance_score }) => {
+      const document = documents[index];
+      if (!document) throw new Error(`OpenRouter returned invalid rerank index ${index}`);
+      return { ...document, score: relevance_score };
+    });
   }
 }

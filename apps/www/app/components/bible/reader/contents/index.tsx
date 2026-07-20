@@ -2,7 +2,6 @@ import type { Content } from '@/schemas/bibles/contents';
 import type { VerseNote } from '@/schemas/bibles/verses/types';
 import { cn } from '@/www/lib/utils';
 import type { HighlightInfo } from '@/www/types/bible';
-import { useMemo } from 'react';
 import { CharContent } from './char';
 import { NoteContent } from './note';
 import { RefContent } from './ref';
@@ -17,22 +16,18 @@ export type ContentsProps = {
 
 export function Contents({ contents, highlights, notes, className }: ContentsProps) {
   return contents.map((content) => {
-    const { style, ...attrs } = useMemo(() => content.attrs || {}, [content.attrs]);
-
-    const addProps = useMemo(() => {
-      const attrs = content.attrs || {};
-      return Object.entries(attrs).reduce(
-        (acc, [key, value]) => {
-          if (key.startsWith('data-')) {
-            acc[key] = value;
-          } else {
-            acc[`data-${key}`] = value;
-          }
-          return acc;
-        },
-        {} as Record<string, string>,
-      );
-    }, [content.attrs]);
+    const { style, ...attrs } = content.attrs || {};
+    const addProps = Object.entries(attrs).reduce(
+      (acc, [key, value]) => {
+        if (key.startsWith('data-')) {
+          acc[key] = value;
+        } else {
+          acc[`data-${key}`] = value;
+        }
+        return acc;
+      },
+      {} as Record<string, string>,
+    );
 
     switch (content.type) {
       case 'text': {

@@ -2,3 +2,30 @@ packages:
   - apps/*
   - packages/*
   - tools/*
+
+overrides:
+  "@cloudflare/workers-types": "^5.20260719.1"
+  esbuild: "^0.28.1"
+
+peerDependencyRules:
+  allowedVersions:
+    "@types/react": "19.2.17"
+    stripe: "22.3.2"
+
+autoInstallPeers: false
+
+allowBuilds:
+  "@biomejs/biome": true
+  "@openrouter/sdk": true
+  "@parcel/watcher": true
+  "@sentry/cli": true
+  braintrust: false
+  core-js: true
+  cypress: true
+  esbuild: true
+  msgpackr-extract: true
+  sharp: true
+  workerd: true
+
+# The revival pins releases explicitly and verifies the lockfile in CI.
+minimumReleaseAge: 0

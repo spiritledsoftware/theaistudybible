@@ -1,4 +1,3 @@
-import { allChatModels } from '@/ai/models';
 import {
   Accordion,
   AccordionContent,
@@ -7,10 +6,10 @@ import {
 } from '@/www/components/ui/accordion';
 import { Button } from '@/www/components/ui/button';
 import { cn } from '@/www/lib/utils';
+import type { useChat } from '@/www/hooks/use-chat';
 import { getMessageId } from '@/www/utils/message';
-import type { Message as AiMessage, useChat } from '@ai-sdk/react';
+import { getToolName, isToolUIPart, type UIMessage } from 'ai';
 import { Copy } from 'lucide-react';
-import { Fragment, useMemo } from 'react';
 import { toast } from 'sonner';
 import { useCopyToClipboard } from 'usehooks-ts';
 import { UserAvatar } from '../../auth/user-avatar';
@@ -20,9 +19,9 @@ import { MessageReactionButtons } from './reaction-buttons';
 import { Tool } from './tools';
 
 export type MessageProps = {
-  previousMessage?: AiMessage;
-  nextMessage?: AiMessage;
-  message: AiMessage;
+  previousMessage?: UIMessage;
+  nextMessage?: UIMessage;
+  message: UIMessage;
   addToolResult: ReturnType<typeof useChat>['addToolResult'];
   isLoading: boolean;
 };
@@ -35,20 +34,10 @@ export const Message = ({
   isLoading,
 }: MessageProps) => {
   const [, copy] = useCopyToClipboard();
-
-  const modelInfo = useMemo(() => {
-    const modelId =
-      (message.annotations?.find(
-        (a) =>
-          typeof a === 'object' &&
-          a !== null &&
-          !Array.isArray(a) &&
-          'modelId' in a &&
-          typeof a.modelId === 'string',
-      ) as { modelId: string } | undefined) ?? {};
-
-    return allChatModels.find((m) => `${m.host}:${m.id}` === modelId);
-  }, [message.annotations]);
+  const messageText = message.parts
+    .filter((part) => part.type === 'text')
+    .map((part) => part.text)
+    .join('');
 
   return (
     <article
@@ -64,6 +53,7 @@ export const Message = ({
             <UserAvatar className='size-10 shrink-0' aria-label='User avatar' />
           ) : message.role === 'assistant' ? (
             <div
+              role='img'
               className={cn(
                 'relative flex size-10 shrink-0 place-items-center justify-center rounded-full bg-primary p-2',
                 isLoading &&
@@ -77,68 +67,54 @@ export const Message = ({
           ) : null)}
       </div>
       <div className='flex w-full flex-col gap-4 overflow-hidden'>
-        {(message.parts?.length ?? 0) === 0 ? (
-          <>
-            {(message.toolInvocations?.length ?? 0) > 0 &&
-              message.toolInvocations &&
-              message.toolInvocations.map((toolInvocation) => (
-                <Tool
-                  key={toolInvocation.toolCallId}
-                  toolInvocation={toolInvocation}
-                  addToolResult={addToolResult}
-                  isLoading={isLoading && !nextMessage}
-                />
-              ))}
-            {message.content && (
-              <MemoizedMarkdown id={message.id}>{message.content}</MemoizedMarkdown>
-            )}
-          </>
-        ) : (
-          message.parts?.map((part, idx) => (
-            <Fragment key={`${part.type}-${idx}`}>
-              {part.type === 'text' && (
-                <MemoizedMarkdown id={message.id}>{part.text}</MemoizedMarkdown>
-              )}
-              {part.type === 'reasoning' && (
-                <Accordion type='single' collapsible>
-                  <AccordionItem value='reasoning'>
-                    <AccordionTrigger className='text-muted-foreground text-sm'>
-                      View reasoning
-                    </AccordionTrigger>
-                    <AccordionContent>
-                      <MemoizedMarkdown id={message.id}>{part.reasoning}</MemoizedMarkdown>
-                    </AccordionContent>
-                  </AccordionItem>
-                </Accordion>
-              )}
-              {part.type === 'tool-invocation' && (
-                <Tool
-                  toolInvocation={part.toolInvocation}
-                  addToolResult={addToolResult}
-                  isLoading={isLoading && !nextMessage}
-                />
-              )}
-            </Fragment>
-          ))
-        )}
+        {message.parts.map((part, idx) => {
+          if (part.type === 'text') {
+            return (
+              // biome-ignore lint/suspicious/noArrayIndexKey: AI SDK text parts have no stable identifier and are append-only
+              <MemoizedMarkdown key={`${part.type}-${idx}`} id={message.id}>
+                {part.text}
+              </MemoizedMarkdown>
+            );
+          }
+          if (part.type === 'reasoning') {
+            return (
+              // biome-ignore lint/suspicious/noArrayIndexKey: AI SDK reasoning parts have no stable identifier and are append-only
+              <Accordion key={`${part.type}-${idx}`} type='single' collapsible>
+                <AccordionItem value='reasoning'>
+                  <AccordionTrigger className='text-muted-foreground text-sm'>
+                    View reasoning
+                  </AccordionTrigger>
+                  <AccordionContent>
+                    <MemoizedMarkdown id={message.id}>{part.text}</MemoizedMarkdown>
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
+            );
+          }
+          if (isToolUIPart(part)) {
+            return (
+              <Tool
+                key={part.toolCallId}
+                toolInvocation={{
+                  args: part.input,
+                  result: part.state === 'output-available' ? part.output : undefined,
+                  toolCallId: part.toolCallId,
+                  toolName: getToolName(part),
+                }}
+                addToolResult={addToolResult}
+                isLoading={isLoading && !nextMessage}
+              />
+            );
+          }
+          return null;
+        })}
         {message.role === 'assistant' && message.role !== nextMessage?.role && (
           <div className='flex items-center gap-1' role='toolbar' aria-label='Message actions'>
-            {modelInfo && (
-              <Button
-                variant='outline'
-                className='w-fit rounded-full border p-2 text-muted-foreground text-xs'
-                asChild
-              >
-                <a href={modelInfo.link} target='_blank' rel='noopener noreferrer'>
-                  {modelInfo.name}
-                </a>
-              </Button>
-            )}
             <Button
               variant='ghost'
               className='h-fit w-fit p-1'
               onClick={() => {
-                copy(message.content);
+                copy(messageText);
                 toast.success('Text copied');
               }}
               aria-label='Copy message'

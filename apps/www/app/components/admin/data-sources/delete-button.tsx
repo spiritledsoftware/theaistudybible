@@ -1,5 +1,7 @@
 import { db } from '@/core/database';
+import { vectorStore } from '@/ai/vector-store';
 import { dataSources } from '@/core/database/schema';
+import { getPrivateSourceKey, getPrivateSourcesBucket } from '@/core/storage';
 import type { DataSource } from '@/schemas/data-sources/types';
 import { requireAdminMiddleware } from '@/www/server/middleware/auth';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -28,10 +30,27 @@ const deleteDataSource = createServerFn({ method: 'POST' })
     }),
   )
   .handler(async ({ data }) => {
-    const [dataSource] = await db
-      .delete(dataSources)
-      .where(eq(dataSources.id, data.id))
-      .returning();
+    const dataSource = await db.query.dataSources.findFirst({
+      where: (table, { eq: equals }) => equals(table.id, data.id),
+    });
+    if (!dataSource) return { dataSource: null };
+
+    const indexedDocuments = await db.query.dataSourcesToSourceDocuments.findMany({
+      where: (table, { eq: equals }) => equals(table.dataSourceId, data.id),
+      columns: { sourceDocumentId: true },
+    });
+    if (indexedDocuments.length > 0) {
+      await vectorStore.deleteDocuments(
+        indexedDocuments.map(({ sourceDocumentId }) => sourceDocumentId),
+      );
+    }
+
+    const privateSourceKey = getPrivateSourceKey(dataSource.url);
+    if (privateSourceKey) {
+      await getPrivateSourcesBucket().delete(privateSourceKey);
+    }
+
+    await db.delete(dataSources).where(eq(dataSources.id, data.id));
     return { dataSource };
   });
 

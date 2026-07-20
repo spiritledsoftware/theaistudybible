@@ -134,11 +134,8 @@ export const NoteItemCard = (props: NoteItemCardProps) => {
   });
 
   const deleteNoteMutation = useMutation({
-    mutationFn: (mProps: {
-      type: 'verse' | 'chapter';
-      bibleAbbreviation: string;
-      code: string;
-    }) => deleteNote({ data: mProps }),
+    mutationFn: (mProps: { type: 'verse' | 'chapter'; bibleAbbreviation: string; code: string }) =>
+      deleteNote({ data: mProps }),
     onSettled: () =>
       qc.invalidateQueries({
         queryKey: ['notes'],

@@ -1,4 +1,4 @@
-import { Font, Head as HeadBase } from '@react-email/components';
+import { Font, Head as HeadBase } from 'jsx-email';
 
 export type HeadProps = React.ComponentProps<typeof HeadBase>;
 

@@ -83,7 +83,7 @@ export const NavigationDropdown = ({ children, ...props }: NavigationDropdownPro
                 <Mail size={18} /> Contact
               </DropdownMenuItem>
               <DropdownMenuItem
-                onSelect={() => window.open(import.meta.env.PUBLIC_DONATION_LINK, '_blank')}
+                onSelect={() => window.open(import.meta.env.VITE_DONATION_LINK, '_blank')}
               >
                 <CreditCard size={18} /> Donate
               </DropdownMenuItem>

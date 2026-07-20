@@ -7,7 +7,7 @@ import { Badge } from '../ui/badge';
 
 export const UserAvatar = ({ className, ...rest }: ComponentProps<typeof Avatar>) => {
   const { user } = useAuth();
-  const { isPro, isMinistry } = useSubscription();
+  const { isPro } = useSubscription();
 
   const src = useMemo(() => user?.image || undefined, [user]);
   const fallback = useMemo(
@@ -24,12 +24,12 @@ export const UserAvatar = ({ className, ...rest }: ComponentProps<typeof Avatar>
         <AvatarImage src={src} className='size-full' />
         <AvatarFallback className='size-full'>{fallback}</AvatarFallback>
       </Avatar>
-      {isPro || isMinistry ? (
+      {isPro ? (
         <Badge
           variant='outline'
           className='-right-2 -bottom-2 absolute h-fit w-fit bg-card px-1 py-0.5 text-[8px]'
         >
-          {isPro ? 'Pro' : 'Ministry'}
+          Pro
         </Badge>
       ) : null}
     </span>

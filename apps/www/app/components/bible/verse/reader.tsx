@@ -9,7 +9,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Link, useNavigate, useRouter, useRouterState } from '@tanstack/react-router';
 import { createServerFn } from '@tanstack/react-start';
 import { ChevronLeft, ChevronRight, Copyright } from 'lucide-react';
-import { useEffect, useMemo, useRef } from 'react';
+import { type RefObject, useEffect, useRef } from 'react';
 import { z } from 'zod';
 import { Button, buttonVariants } from '../../ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../../ui/tooltip';
@@ -147,9 +147,146 @@ export type VerseReaderProps = {
   verseNum: number;
 };
 
+type VerseReaderData = Awaited<ReturnType<typeof getVerseReaderData>>;
+
+function VerseReaderContent({
+  bible,
+  book,
+  chapter,
+  verse,
+  rightsHolder,
+  containerRef,
+}: VerseReaderData & { containerRef: RefObject<HTMLDivElement | null> }) {
+  const navigate = useNavigate();
+  const router = useRouter();
+  const routerState = useRouterState();
+  const { setBible, setBook, setChapter, setVerse } = useBibleStore((state) => ({
+    setBible: state.setBible,
+    setBook: state.setBook,
+    setChapter: state.setChapter,
+    setVerse: state.setVerse,
+  }));
+
+  useEffect(() => {
+    setBible(bible);
+    setBook(book);
+    setChapter(chapter);
+    setVerse(verse);
+  }, [bible, book, chapter, verse, setBible, setBook, setChapter, setVerse]);
+
+  const previousVerse =
+    verse.previous ?? chapter.previous?.verses[0] ?? book.previous?.chapters[0]?.verses[0];
+  const previousVerseRoute =
+    `/bible/${bible.abbreviation}/${previousVerse?.code.split('.')[0]}` +
+    `/${previousVerse?.code.split('.')[1]}/${previousVerse?.number}`;
+  const nextVerse = verse.next ?? chapter.next?.verses[0] ?? book.next?.chapters[0]?.verses[0];
+  const nextVerseRoute =
+    `/bible/${bible.abbreviation}/${nextVerse?.code.split('.')[0]}` +
+    `/${nextVerse?.code.split('.')[1]}/${nextVerse?.number}`;
+
+  useEffect(() => {
+    if (previousVerse) {
+      router.preloadRoute({ to: previousVerseRoute });
+    }
+
+    if (nextVerse) {
+      router.preloadRoute({ to: nextVerseRoute });
+    }
+  }, [router, previousVerse, nextVerse, previousVerseRoute, nextVerseRoute]);
+
+  useSwipe(containerRef, {
+    onSwipeLeft: () => {
+      if (nextVerse && !routerState.isLoading) {
+        navigate({ to: nextVerseRoute });
+      }
+    },
+    onSwipeRight: () => {
+      if (previousVerse && !routerState.isLoading) {
+        navigate({ to: previousVerseRoute });
+      }
+    },
+  });
+
+  return (
+    <BibleReaderProvider bible={bible} book={book} chapter={chapter} verse={verse}>
+      <BibleReaderMenu />
+      <div className='my-5'>
+        <ReaderContent contents={verse.content} />
+      </div>
+      <div className='mb-20 flex flex-col items-center gap-2'>
+        <Muted>
+          Copyright
+          <Copyright className='mx-2 inline-block size-4' />
+          <Button variant='link' className='p-0 text-muted-foreground' asChild>
+            <Link to={rightsHolder.url} target='_blank'>
+              {rightsHolder.nameLocal}
+            </Link>
+          </Button>
+        </Muted>
+        <div
+          // biome-ignore lint/security/noDangerouslySetInnerHtml: Rights-holder markup is sanitized during import
+          dangerouslySetInnerHTML={{ __html: bible.copyrightStatement }}
+          className='flex flex-col items-center text-center text-muted-foreground text-xs'
+        />
+      </div>
+      <div className='flex w-full flex-col items-center'>
+        <Button asChild variant='outline'>
+          <Link
+            to='/bible/$bibleAbbreviation/$bookCode/$chapterNumber'
+            params={{
+              bibleAbbreviation: bible.abbreviation,
+              bookCode: book.code,
+              chapterNumber: chapter.number,
+            }}
+          >
+            View all of <strong>{chapter.name}</strong>
+          </Link>
+        </Button>
+      </div>
+      {previousVerse && (
+        <Tooltip>
+          <TooltipTrigger
+            className={cn(
+              buttonVariants(),
+              'sm:-translate-y-1/2 fixed bottom-safe-offset-1 left-safe-offset-1 flex size-10 items-center justify-center rounded-full p-2 sm:top-1/2 md:left-safe-offset-2 md:size-12 lg:left-[12%]',
+              routerState.isLoading && 'pointer-events-none opacity-50',
+            )}
+            asChild
+          >
+            <Link to={previousVerseRoute}>
+              <ChevronLeft className='size-full' />
+            </Link>
+          </TooltipTrigger>
+          <TooltipContent side='right'>
+            <p>{previousVerse.name}</p>
+          </TooltipContent>
+        </Tooltip>
+      )}
+      {nextVerse && (
+        <Tooltip>
+          <TooltipTrigger
+            asChild
+            className={cn(
+              buttonVariants(),
+              'sm:-translate-y-1/2 fixed right-safe-offset-1 bottom-safe-offset-1 flex size-10 items-center justify-center rounded-full p-2 sm:top-1/2 md:right-safe-offset-2 md:size-12 lg:right-[12%]',
+              routerState.isLoading && 'pointer-events-none opacity-50',
+            )}
+          >
+            <Link to={nextVerseRoute}>
+              <ChevronRight className='size-full' />
+            </Link>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>{nextVerse.name}</p>
+          </TooltipContent>
+        </Tooltip>
+      )}
+    </BibleReaderProvider>
+  );
+}
+
 export function VerseReader(props: VerseReaderProps) {
   const navigate = useNavigate();
-  const routerState = useRouterState();
 
   const { setBible, setBook, setChapter, setVerse } = useBibleStore((state) => ({
     setBible: state.setBible,
@@ -184,140 +321,7 @@ export function VerseReader(props: VerseReaderProps) {
             </div>
           </div>
         }
-        render={({ bible, book, chapter, verse, rightsHolder }) => {
-          useEffect(() => {
-            setBible(bible);
-            setBook(book);
-            setChapter(chapter);
-            setVerse(verse);
-          }, [bible, book, chapter, verse]);
-
-          const previousVerse = useMemo(
-            () =>
-              verse.previous ??
-              chapter.previous?.verses[0] ??
-              book.previous?.chapters[0]?.verses[0],
-            [verse, chapter, book],
-          );
-          const previousVerseRoute = useMemo(
-            () =>
-              `/bible/${bible.abbreviation}/${previousVerse?.code.split('.')[0]}` +
-              `/${previousVerse?.code.split('.')[1]}/${previousVerse?.number}`,
-            [bible, previousVerse],
-          );
-
-          const nextVerse = useMemo(
-            () => verse.next ?? chapter.next?.verses[0] ?? book.next?.chapters[0]?.verses[0],
-            [verse, chapter, book],
-          );
-          const nextVerseRoute = useMemo(
-            () =>
-              `/bible/${bible.abbreviation}/${nextVerse?.code.split('.')[0]}` +
-              `/${nextVerse?.code.split('.')[1]}/${nextVerse?.number}`,
-            [bible, nextVerse],
-          );
-
-          const router = useRouter();
-          useEffect(() => {
-            if (previousVerse) {
-              router.preloadRoute({ to: previousVerseRoute });
-            }
-
-            if (nextVerse) {
-              router.preloadRoute({ to: nextVerseRoute });
-            }
-          }, [router, previousVerse, nextVerse, previousVerseRoute, nextVerseRoute]);
-
-          useSwipe(containerRef, {
-            onSwipeLeft: () => {
-              if (nextVerse && !routerState.isLoading) {
-                navigate({ to: nextVerseRoute });
-              }
-            },
-            onSwipeRight: () => {
-              if (previousVerse && !routerState.isLoading) {
-                navigate({ to: previousVerseRoute });
-              }
-            },
-          });
-
-          return (
-            <BibleReaderProvider bible={bible} book={book} chapter={chapter} verse={verse}>
-              <BibleReaderMenu />
-              <div className='my-5'>
-                <ReaderContent contents={verse.content} />
-              </div>
-              <div className='mb-20 flex flex-col items-center gap-2'>
-                <Muted>
-                  Copyright
-                  <Copyright className='mx-2 inline-block size-4' />
-                  <Button variant='link' className='p-0 text-muted-foreground' asChild>
-                    <Link to={rightsHolder.url} target='_blank'>
-                      {rightsHolder.nameLocal}
-                    </Link>
-                  </Button>
-                </Muted>
-                <div
-                  // biome-ignore lint/security/noDangerouslySetInnerHtml: Fine here
-                  dangerouslySetInnerHTML={{ __html: bible.copyrightStatement }}
-                  className='flex flex-col items-center text-center text-muted-foreground text-xs'
-                />
-              </div>
-              <div className='flex w-full flex-col items-center'>
-                <Button asChild variant='outline'>
-                  <Link
-                    to='/bible/$bibleAbbreviation/$bookCode/$chapterNumber'
-                    params={{
-                      bibleAbbreviation: bible.abbreviation,
-                      bookCode: book.code,
-                      chapterNumber: chapter.number,
-                    }}
-                  >
-                    View all of <strong>{chapter.name}</strong>
-                  </Link>
-                </Button>
-              </div>
-              {previousVerse && (
-                <Tooltip>
-                  <TooltipTrigger
-                    className={cn(
-                      buttonVariants(),
-                      'sm:-translate-y-1/2 fixed bottom-safe-offset-1 left-safe-offset-1 flex size-10 items-center justify-center rounded-full p-2 sm:top-1/2 md:left-safe-offset-2 md:size-12 lg:left-[12%]',
-                      routerState.isLoading && 'pointer-events-none opacity-50',
-                    )}
-                    asChild
-                  >
-                    <Link to={previousVerseRoute}>
-                      <ChevronLeft className='size-full' />
-                    </Link>
-                  </TooltipTrigger>
-                  <TooltipContent side='right'>
-                    <p>{previousVerse.name}</p>
-                  </TooltipContent>
-                </Tooltip>
-              )}
-              {nextVerse && (
-                <Tooltip>
-                  <TooltipTrigger
-                    asChild
-                    className={cn(
-                      buttonVariants(),
-                      'sm:-translate-y-1/2 fixed right-safe-offset-1 bottom-safe-offset-1 flex size-10 items-center justify-center rounded-full p-2 sm:top-1/2 md:right-safe-offset-2 md:size-12 lg:right-[12%]',
-                      routerState.isLoading && 'pointer-events-none opacity-50',
-                    )}
-                  >
-                    <Link to={nextVerseRoute}>
-                      <ChevronRight className='size-full' />
-                    </Link>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>{nextVerse.name}</p>
-                  </TooltipContent>
-                </Tooltip>
-              )}
-            </BibleReaderProvider>
-          );
-        }}
+        render={(data) => <VerseReaderContent {...data} containerRef={containerRef} />}
       />
     </div>
   );

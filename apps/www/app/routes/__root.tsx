@@ -1,14 +1,8 @@
 import appCss from '@/www/styles/globals.css?url';
-import { wrapCreateRootRouteWithSentry } from '@sentry/tanstackstart-react';
 import type { QueryClient } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
-import {
-  HeadContent,
-  Outlet,
-  type ReactNode,
-  Scripts,
-  createRootRouteWithContext,
-} from '@tanstack/react-router';
+import { HeadContent, Outlet, Scripts, createRootRouteWithContext } from '@tanstack/react-router';
+import type { ReactNode } from 'react';
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools';
 import { NotificationPromptDialog } from '../components/notification-prompt-dialog';
 import { Toaster } from '../components/ui/sonner';
@@ -21,9 +15,7 @@ import { cn } from '../lib/utils';
 import { getAuth } from '../server/functions/auth';
 import { getSubscription } from '../server/functions/pro';
 
-export const Route = wrapCreateRootRouteWithSentry(
-  createRootRouteWithContext<{ queryClient: QueryClient }>(),
-)({
+export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   beforeLoad: async () => {
     const [{ auth }, { subscription, type }] = await Promise.all([getAuth(), getSubscription()]);
     return { ...auth, subscription, subscriptionType: type };

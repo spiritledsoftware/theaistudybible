@@ -1,21 +1,26 @@
-import type { EmbeddingModel } from 'ai';
-import { embeddingModel } from './models';
-import { registry } from './provider-registry';
+import { embed, embedMany, type EmbeddingModel } from 'ai';
+import { getEmbeddingModel } from './models';
 import type { Document, DocumentWithEmbedding } from './types/document';
 
 export class Embeddings {
-  private readonly embeddings: EmbeddingModel<string>;
+  private embeddings: EmbeddingModel | undefined;
 
-  constructor() {
-    this.embeddings = registry.textEmbeddingModel(`${embeddingModel.host}:${embeddingModel.id}`);
+  constructor(embeddings?: EmbeddingModel) {
+    this.embeddings = embeddings;
+  }
+
+  private get model() {
+    this.embeddings ??= getEmbeddingModel();
+    return this.embeddings;
   }
 
   async embedQuery(query: string) {
-    const response = await this.embeddings.doEmbed({
-      values: [query],
+    const response = await embed({
+      model: this.model,
+      value: query,
     });
 
-    return response.embeddings[0];
+    return response.embedding;
   }
 
   async embedDocuments(docs: Document[]) {
@@ -24,8 +29,9 @@ export class Embeddings {
     const chunkSize = 20;
     for (let i = 0; i < docs.length; i += chunkSize) {
       const chunk = docs.slice(i, i + chunkSize);
-      const { embeddings } = await this.embeddings.doEmbed({
-        values: chunk.map((d) => d.content),
+      const { embeddings } = await embedMany({
+        model: this.model,
+        values: chunk.map((document) => document.content),
       });
 
       result = result.concat(

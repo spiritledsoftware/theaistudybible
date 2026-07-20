@@ -1,5 +1,6 @@
 import { db } from '@/core/database';
 import { users } from '@/core/database/schema';
+import { env } from '@/core/env';
 import { stripe } from '@/core/stripe';
 import { syncStripeData } from '@/core/stripe/utils';
 import { QueryBoundary } from '@/www/components/query-boundary';
@@ -13,15 +14,14 @@ import { GradientH1, Lead, List, ListItem, Muted, P } from '@/www/components/ui/
 import { useSubscription } from '@/www/hooks/use-pro-subscription';
 import { cn } from '@/www/lib/utils';
 import { requireAuthMiddleware } from '@/www/server/middleware/auth';
-import { loadStripe } from '@stripe/stripe-js';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { createFileRoute, redirect, useNavigate } from '@tanstack/react-router';
 import { createServerFn } from '@tanstack/react-start';
+import { getRequest } from '@tanstack/react-start/server';
 import { eq } from 'drizzle-orm';
 import { Check } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import { Resource } from 'sst';
 import { z } from 'zod';
 
 export const Route = createFileRoute('/_with-header/pro')({
@@ -58,16 +58,42 @@ export const Route = createFileRoute('/_with-header/pro')({
   component: RouteComponent,
 });
 
-const getProducts = createServerFn({ method: 'GET' }).handler(() => {
+const getProducts = createServerFn({ method: 'GET' }).handler(async () => {
+  const [monthlyPrice, yearlyPrice] = await Promise.all([
+    stripe.prices.retrieve(env.PRO_MONTHLY_PRICE_ID, { expand: ['product'] }),
+    stripe.prices.retrieve(env.PRO_YEARLY_PRICE_ID, { expand: ['product'] }),
+  ]);
+  const product = monthlyPrice.product;
+  if (typeof product === 'string' || product.deleted) {
+    throw new Error('Configured Pro product is unavailable');
+  }
+  if (
+    monthlyPrice.unit_amount === null ||
+    yearlyPrice.unit_amount === null ||
+    monthlyPrice.currency !== yearlyPrice.currency
+  ) {
+    throw new Error('Configured Pro prices must have fixed amounts in the same currency');
+  }
   return {
     products: [
       {
-        ...Resource.ProSubProduct,
-        prices: [Resource.ProSubMonthlyPrice, Resource.ProSubYearlyPrice],
-      },
-      {
-        ...Resource.MinistrySubProduct,
-        prices: [Resource.MinistrySubMonthlyPrice, Resource.MinistrySubYearlyPrice],
+        id: product.id,
+        name: product.name,
+        features: product.marketing_features
+          .map(({ name }) => name)
+          .filter((name): name is string => typeof name === 'string'),
+        prices: [
+          {
+            currency: monthlyPrice.currency,
+            id: monthlyPrice.id,
+            unitAmount: monthlyPrice.unit_amount,
+          },
+          {
+            currency: yearlyPrice.currency,
+            id: yearlyPrice.id,
+            unitAmount: yearlyPrice.unit_amount,
+          },
+        ],
       },
     ],
   };
@@ -77,6 +103,9 @@ const createCheckoutSession = createServerFn({ method: 'POST' })
   .middleware([requireAuthMiddleware])
   .validator(z.object({ priceId: z.string() }))
   .handler(async ({ data, context }) => {
+    if (data.priceId !== env.PRO_MONTHLY_PRICE_ID && data.priceId !== env.PRO_YEARLY_PRICE_ID) {
+      throw new Error('Invalid Pro price');
+    }
     let { user } = context;
     if (!user.stripeCustomerId) {
       const customer = await stripe.customers.create({
@@ -89,6 +118,7 @@ const createCheckoutSession = createServerFn({ method: 'POST' })
         .where(eq(users.id, user.id))
         .returning();
     }
+    const origin = new URL(getRequest().url).origin;
     const checkoutSession = await stripe.checkout.sessions.create({
       customer: user.stripeCustomerId!,
       mode: 'subscription',
@@ -97,11 +127,11 @@ const createCheckoutSession = createServerFn({ method: 'POST' })
         trial_period_days: 7,
         trial_settings: { end_behavior: { missing_payment_method: 'cancel' } },
       },
-      success_url: `${import.meta.env.PUBLIC_WEBAPP_URL}/pro?success=true`,
-      cancel_url: `${import.meta.env.PUBLIC_WEBAPP_URL}/pro?canceled=true`,
+      success_url: `${origin}/pro?success=true`,
+      cancel_url: `${origin}/pro?canceled=true`,
       metadata: { userId: user.id },
     });
-    return { checkoutSession };
+    return { checkoutUrl: checkoutSession.url };
   });
 
 const syncSubscription = createServerFn({ method: 'POST' })
@@ -140,20 +170,11 @@ function RouteComponent() {
 
   const handlePurchase = useMutation({
     mutationFn: async (priceId: string) => {
-      const [{ checkoutSession }, stripe] = await Promise.all([
-        createCheckoutSession({ data: { priceId } }),
-        loadStripe(import.meta.env.PUBLIC_STRIPE_PUBLISHABLE_KEY),
-      ]);
-      if (!stripe) {
-        throw new Error('Error loading Stripe');
+      const { checkoutUrl } = await createCheckoutSession({ data: { priceId } });
+      if (!checkoutUrl) {
+        throw new Error('Stripe did not return a checkout URL');
       }
-
-      const { error } = await stripe.redirectToCheckout({
-        sessionId: checkoutSession.id,
-      });
-      if (error) {
-        throw new Error(error.message);
-      }
+      window.location.assign(checkoutUrl);
     },
     onError: (error) => {
       toast.error(error.message);
@@ -205,7 +226,7 @@ function RouteComponent() {
                 </div>
               }
               render={({ products }) => (
-                <div className='grid grid-cols-1 gap-8 md:grid-cols-2'>
+                <div className='mx-auto grid max-w-xl grid-cols-1 gap-8'>
                   {products.map((product, index) => (
                     <Card
                       key={product.id}
@@ -215,11 +236,6 @@ function RouteComponent() {
                       )}
                       onClick={() => setSelectedProductIndex(index)}
                     >
-                      {index === 0 && !isYearly && (
-                        <div className='-right-12 absolute top-6 rotate-45 bg-primary px-12 py-1 font-bold text-primary-foreground text-sm'>
-                          Popular
-                        </div>
-                      )}
                       <CardHeader className='space-y-6 pt-6 pb-2'>
                         <CardTitle className='text-center font-extrabold text-2xl'>
                           {product.name}
@@ -227,20 +243,18 @@ function RouteComponent() {
 
                         <div className='flex flex-col items-center gap-3'>
                           <div className='flex items-baseline font-bold text-3xl'>
-                            $
-                            {isYearly
-                              ? product.prices[1].unitAmount / 100
-                              : product.prices[0].unitAmount / 100}
+                            {new Intl.NumberFormat(undefined, {
+                              style: 'currency',
+                              currency: product.prices[0].currency,
+                            }).format(
+                              (isYearly
+                                ? product.prices[1].unitAmount
+                                : product.prices[0].unitAmount) / 100,
+                            )}
                             <Muted className='ml-1 inline text-lg'>
                               /{isYearly ? 'year' : 'month'}
                             </Muted>
                           </div>
-
-                          {isYearly && (
-                            <div className='w-fit rounded-full bg-primary/20 px-4 py-1 font-medium text-primary text-sm'>
-                              Save 17%
-                            </div>
-                          )}
 
                           <Badge variant='secondary' className='mt-1 px-4 py-1 text-base'>
                             Includes 7-day free trial
@@ -293,12 +307,11 @@ function RouteComponent() {
           <div className='mb-8 grid max-w-4xl grid-cols-1 gap-4 opacity-90 md:grid-cols-3'>
             <Card className='border bg-background/80 transition-all hover:border-primary/40 hover:shadow-sm'>
               <CardHeader>
-                <CardTitle className='text-center'>Deeper Insights</CardTitle>
+                <CardTitle className='text-center'>Scripture-Grounded Study</CardTitle>
               </CardHeader>
               <CardContent className='text-center'>
                 <P className='text-muted-foreground text-sm'>
-                  Access advanced AI models that provide more nuanced theological understanding and
-                  contextual awareness
+                  Explore substantive answers grounded in approved scripture and study sources.
                 </P>
               </CardContent>
             </Card>
@@ -308,8 +321,7 @@ function RouteComponent() {
               </CardHeader>
               <CardContent className='text-center'>
                 <P className='text-muted-foreground text-sm'>
-                  Higher daily limits on AI interactions, searches, or study sessions - study as
-                  much as you want
+                  Continue more AI-assisted conversations and searches each day.
                 </P>
               </CardContent>
             </Card>

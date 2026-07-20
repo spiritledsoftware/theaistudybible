@@ -13,6 +13,7 @@ export const EmailBodySchema = z.union([
 ]);
 
 export const EmailQueueRecordSchema = z.object({
+  idempotencyKey: z.string().min(1).max(300).optional(),
   subject: z.string(),
   to: z.string().email().array(),
   cc: z.string().email().array().optional(),

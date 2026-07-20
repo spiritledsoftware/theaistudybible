@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
+import { promoteExistingAccount } from './users/promote-admin';
 
 await yargs(hideBin(process.argv))
   .scriptName('scripts')
@@ -77,16 +78,43 @@ await yargs(hideBin(process.argv))
         },
       ),
   )
-  .command('users', 'User commands', (yargs) =>
-    yargs.command(
-      'create-default-settings',
-      'Create default user settings for all users',
-      (yargs) => yargs,
-      async () => {
-        const { createUserSettings } = await import('./one-off/create-user-settings');
-        await createUserSettings();
-      },
-    ),
+  .command('users', 'Account commands', (yargs) =>
+    yargs
+      .command(
+        'create-default-settings',
+        'Create default Account settings for all Readers',
+        (yargs) => yargs,
+        async () => {
+          const { createUserSettings } = await import('./one-off/create-user-settings');
+          await createUserSettings();
+        },
+      )
+      .command(
+        'promote-admin',
+        'Promote an existing production Account to administrator',
+        (yargs) =>
+          yargs
+            .option('database', {
+              type: 'string',
+              demandOption: true,
+              description: 'Production D1 database name or UUID',
+            })
+            .option('email', { type: 'string', demandOption: true })
+            .option('stage', { type: 'string', choices: ['production'], demandOption: true })
+            .option('confirm', {
+              type: 'string',
+              demandOption: true,
+              description: 'Exact confirmation phrase: PROMOTE <email>',
+            }),
+        async (argv) => {
+          await promoteExistingAccount({
+            database: argv.database,
+            email: argv.email,
+            stage: argv.stage,
+            confirmation: argv.confirm,
+          });
+        },
+      ),
   )
   .showHelpOnFail(true)
   .help('h')

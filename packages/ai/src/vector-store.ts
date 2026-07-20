@@ -1,9 +1,7 @@
 import { db } from '@/core/database';
 import { sourceDocuments } from '@/core/database/schema';
-import type { Prettify } from '@/core/types/util';
-import { Index } from '@upstash/vector';
 import { inArray } from 'drizzle-orm';
-import { Resource } from 'sst';
+import { env } from '@/core/env';
 import type { Embeddings } from './embeddings';
 import { embeddings } from './embeddings';
 import { Reranker } from './reranker';
@@ -19,7 +17,7 @@ const addDocumentsDefaults = {
 } as const satisfies AddDocumentsOptions;
 
 export type SearchDocumentsOptions = {
-  filter?: Prettify<VectorStore['FilterType']>;
+  filter?: VectorizeVectorMetadataFilter | VectorizeVectorMetadataFilter[];
   scoreThreshold?: number;
   withEmbedding?: boolean;
   withMetadata?: boolean;
@@ -44,21 +42,44 @@ const getDocumentsDefaults = {
   withMetadata: true,
 } as const satisfies GetDocumentsOptions;
 
-export class VectorStore {
-  declare FilterType: string;
-  private readonly client: Index;
-  private readonly reranker: Reranker;
+function isVectorizeMetadataValue(value: unknown): value is VectorizeVectorMetadata {
+  return (
+    typeof value === 'string' ||
+    typeof value === 'number' ||
+    typeof value === 'boolean' ||
+    (Array.isArray(value) && value.every((item) => typeof item === 'string'))
+  );
+}
 
-  public static MAX_UPSERT_BATCH_SIZE = 1000;
-  public static MAX_DELETE_BATCH_SIZE = 1000;
-
-  constructor(private readonly embeddings: Embeddings) {
-    this.client = new Index({
-      url: Resource.UpstashVectorIndex.restUrl,
-      token: Resource.UpstashVectorIndex.restToken,
-    });
-    this.reranker = new Reranker();
+function toVectorizeMetadata(document: Document): Record<string, VectorizeVectorMetadata> {
+  const metadata: Record<string, VectorizeVectorMetadata> = { content: document.content };
+  for (const [key, value] of Object.entries(document.metadata ?? {})) {
+    if (!isVectorizeMetadataValue(value)) {
+      throw new TypeError(`Unsupported Vectorize metadata at "${key}"`);
+    }
+    metadata[key] = value;
   }
+  return metadata;
+}
+
+function vectorizeMatchToDocument(match: VectorizeMatch): DocumentWithScore {
+  const { content, ...metadata } = match.metadata ?? {};
+  return {
+    id: match.id,
+    content: typeof content === 'string' ? content : '',
+    embedding: match.values ? Array.from(match.values) : undefined,
+    metadata,
+    score: match.score,
+  };
+}
+
+export class VectorStore {
+  private readonly reranker = new Reranker();
+
+  public static MAX_UPSERT_BATCH_SIZE = 1_000;
+  public static MAX_DELETE_BATCH_SIZE = 1_000;
+
+  constructor(private readonly embeddings: Embeddings) {}
 
   async addDocuments(
     docs: Document[],
@@ -67,42 +88,27 @@ export class VectorStore {
     const docsWithEmbeddings = await this.embeddings.embedDocuments(docs);
     const batches = Math.ceil(docsWithEmbeddings.length / VectorStore.MAX_UPSERT_BATCH_SIZE);
     for (let i = 0; i < batches; i++) {
-      let batch = docsWithEmbeddings.slice(
+      const batch = docsWithEmbeddings.slice(
         i * VectorStore.MAX_UPSERT_BATCH_SIZE,
         (i + 1) * VectorStore.MAX_UPSERT_BATCH_SIZE,
       );
-
-      let existingDocs: Document[] = [];
-      if (!options.overwrite) {
-        existingDocs = await this.client
-          .fetch(
-            batch.map((d) => d.id),
-            { includeMetadata: false, includeVectors: false, namespace: options.namespace },
-          )
-          .then((r) => r.filter((d) => d !== null) as Document[]);
-        if (existingDocs.length > 0) {
-          throw new Error('Overwrite is false but some documents already exist');
-        }
-        batch = batch.filter((d) => !existingDocs.some((ed) => ed.id === d.id));
-        if (batch.length === 0) continue;
-      }
-
+      const vectors = batch.map((document) => ({
+        id: document.id,
+        values: document.embedding,
+        namespace: options.namespace,
+        metadata: toVectorizeMetadata(document),
+      }));
       await Promise.all([
-        this.client.upsert(
-          batch.map((d) => ({
-            id: d.id,
-            vector: d.embedding,
-            metadata: { content: d.content, ...d.metadata },
-          })),
-          { namespace: options.namespace },
-        ),
+        options.overwrite
+          ? env.SCRIPTURE_INDEX.upsert(vectors)
+          : env.SCRIPTURE_INDEX.insert(vectors),
         db
           .insert(sourceDocuments)
-          .values(batch.map((d) => ({ id: d.id })))
+          .values(batch.map(({ id }) => ({ id })))
           .onConflictDoNothing(),
       ]);
     }
-    return docsWithEmbeddings.map((d) => d.id);
+    return docsWithEmbeddings.map(({ id }) => id);
   }
 
   async deleteDocuments(ids: string[]): Promise<void> {
@@ -113,7 +119,7 @@ export class VectorStore {
         (i + 1) * VectorStore.MAX_DELETE_BATCH_SIZE,
       );
       await Promise.all([
-        this.client.delete(batch),
+        env.SCRIPTURE_INDEX.deleteByIds(batch),
         db.delete(sourceDocuments).where(inArray(sourceDocuments.id, batch)),
       ]);
     }
@@ -123,54 +129,53 @@ export class VectorStore {
     query: string,
     options: SearchDocumentsOptions = searchDocumentsDefaults,
   ): Promise<DocumentWithScore[]> {
-    const result = await this.client.query(
-      {
-        vector: await this.embeddings.embedQuery(query),
-        topK: options.limit ?? searchDocumentsDefaults.limit ?? 20,
-        filter: options.filter ?? searchDocumentsDefaults.filter,
-        includeMetadata: options.withMetadata ?? searchDocumentsDefaults.withMetadata,
-        includeVectors: options.withEmbedding ?? searchDocumentsDefaults.withEmbedding,
-      },
-      { namespace: options.namespace },
+    const vector = await this.embeddings.embedQuery(query);
+    const configuredFilter = options.filter ?? searchDocumentsDefaults.filter;
+    const filters = Array.isArray(configuredFilter) ? configuredFilter : [configuredFilter];
+    const results = await Promise.all(
+      filters.map((filter) =>
+        env.SCRIPTURE_INDEX.query(vector, {
+          topK: options.limit ?? searchDocumentsDefaults.limit,
+          filter,
+          namespace: options.namespace,
+          returnMetadata: options.rerank || options.withMetadata,
+          returnValues: options.withEmbedding,
+        }),
+      ),
     );
-
-    const docs = result.map((r) => {
-      const { content, ...metadata } = r.metadata ?? {};
-      return {
-        id: r.id.toString(),
-        content: content as string,
-        embedding: r.vector,
-        metadata,
-        score: r.score,
-      };
-    });
+    const docs = results
+      .flatMap(({ matches }) => matches)
+      .filter(
+        (match, index, matches) =>
+          (options.scoreThreshold === undefined || match.score >= options.scoreThreshold) &&
+          index === matches.findIndex(({ id }) => id === match.id),
+      )
+      .map(vectorizeMatchToDocument);
 
     if (options.rerank) {
-      return await this.reranker.rerankDocuments(query, docs);
+      return await this.reranker.rerankDocuments(query, docs, {
+        topK: options.limit ?? searchDocumentsDefaults.limit,
+      });
     }
-
-    return docs;
+    return docs
+      .toSorted((left, right) => right.score - left.score)
+      .slice(0, options.limit ?? searchDocumentsDefaults.limit);
   }
 
   async getDocuments(
     ids: string[],
     options: GetDocumentsOptions = getDocumentsDefaults,
   ): Promise<Document[]> {
-    const result = await this.client.fetch(ids, {
-      includeMetadata: options.withMetadata ?? getDocumentsDefaults.withMetadata,
-      includeVectors: options.withEmbedding ?? getDocumentsDefaults.withEmbedding,
+    const result = await env.SCRIPTURE_INDEX.getByIds(ids);
+    return result.map((vector) => {
+      const { content, ...metadata } = vector.metadata ?? {};
+      return {
+        id: vector.id,
+        content: typeof content === 'string' ? content : '',
+        embedding: options.withEmbedding ? Array.from(vector.values) : undefined,
+        metadata: options.withMetadata ? metadata : undefined,
+      };
     });
-    return result
-      .filter((r) => r !== null)
-      .map((r) => {
-        const { content, ...metadata } = r.metadata ?? {};
-        return {
-          id: r.id.toString(),
-          content: content as string,
-          embedding: r.vector as number[],
-          metadata,
-        };
-      });
   }
 }
 

@@ -1,3 +1,4 @@
+import { env } from '@/core/env';
 import { db } from '@/core/database';
 import { pushSubscriptions } from '@/core/database/schema';
 import { useMutation } from '@tanstack/react-query';
@@ -5,7 +6,6 @@ import { createServerFn } from '@tanstack/react-start';
 import { and, eq } from 'drizzle-orm';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import { Resource } from 'sst';
 import { z } from 'zod';
 import { useServiceWorker } from '../contexts/service-worker';
 import { requireAuthMiddleware } from '../server/middleware/auth';
@@ -13,7 +13,7 @@ import { Label } from './ui/label';
 import { Switch } from './ui/switch';
 
 const getVapidPublicKey = createServerFn({ method: 'GET' }).handler(() => {
-  return { publicKey: Resource.VapidPublicKey.value };
+  return { publicKey: env.VAPID_PUBLIC_KEY };
 });
 
 const subscribeToPushNotifications = createServerFn({ method: 'POST' })

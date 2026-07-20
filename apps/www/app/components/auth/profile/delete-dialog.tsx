@@ -1,6 +1,7 @@
 import { lucia } from '@/core/auth';
 import { db } from '@/core/database';
-import { users } from '@/core/database/schema';
+import { chats, messages, users } from '@/core/database/schema';
+import { getPublicMediaBucket, getPublicMediaKey } from '@/core/storage';
 import { stripe } from '@/core/stripe';
 import { getStripeData } from '@/core/stripe/utils';
 import { useAuth } from '@/www/hooks/use-auth';
@@ -26,13 +27,30 @@ const deleteUser = createServerFn({ method: 'POST' })
   .handler(async ({ context }) => {
     if (context.user.stripeCustomerId) {
       const subData = await getStripeData(context.user.stripeCustomerId);
-      if (subData?.status === 'active') {
-        await stripe.subscriptions.update(subData.subscriptionId, {
-          cancel_at_period_end: true,
-        });
+      if (
+        'subscriptionId' in subData &&
+        subData.status !== 'canceled' &&
+        subData.status !== 'incomplete_expired'
+      ) {
+        await stripe.subscriptions.cancel(subData.subscriptionId);
       }
     }
-    await db.delete(users).where(eq(users.id, context.user.id));
+    const generatedImages = await db.query.userGeneratedImages.findMany({
+      where: (table, { eq: equals }) => equals(table.userId, context.user.id),
+      columns: { url: true },
+    });
+    const mediaKeys = [context.user.image, ...generatedImages.map(({ url }) => url)]
+      .filter((url): url is string => Boolean(url))
+      .map(getPublicMediaKey)
+      .filter((key): key is string => Boolean(key));
+    if (mediaKeys.length > 0) {
+      await getPublicMediaBucket().delete(mediaKeys);
+    }
+    await db.batch([
+      db.delete(messages).where(eq(messages.userId, context.user.id)),
+      db.delete(chats).where(eq(chats.userId, context.user.id)),
+      db.delete(users).where(eq(users.id, context.user.id)),
+    ]);
     const cookie = lucia.cookies.createBlankSessionCookie();
     throw redirect({ to: '/', headers: { 'Set-Cookie': cookie.serialize() } });
   });
@@ -46,11 +64,11 @@ export const DeleteProfileDialog = () => {
   const handleDelete = useMutation({
     mutationFn: () => deleteUser(),
     onMutate: () => {
-      setToastId(toast.loading('Deleting profile...', { duration: Number.POSITIVE_INFINITY }));
+      setToastId(toast.loading('Deleting Account...', { duration: Number.POSITIVE_INFINITY }));
     },
     onSuccess: () => {
       toast.dismiss(toastId);
-      toast.success('Profile deleted');
+      toast.success('Account deleted');
       setOpen(false);
       return refetch();
     },
@@ -63,10 +81,10 @@ export const DeleteProfileDialog = () => {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant='destructive'>Delete Profile</Button>
+        <Button variant='destructive'>Delete Account</Button>
       </DialogTrigger>
       <DialogContent>
-        <DialogTitle>Delete Profile</DialogTitle>
+        <DialogTitle>Delete Account</DialogTitle>
         <DialogDescription>
           Are you sure you want to delete your account? This action cannot be undone.
         </DialogDescription>

@@ -10,16 +10,16 @@
   },
   "devDependencies": {
     "@theaistudybible/tsconfig": "workspace:*",
-    "@types/jsdom": "^21.1.7",
-    "@types/yargs": "^17.0.33"
+    "@types/jsdom": "^28.0.3",
+    "@types/yargs": "^17.0.35"
   },
   "dependencies": {
     "@theaistudybible/ai": "workspace:*",
     "@theaistudybible/core": "workspace:*",
     "@theaistudybible/schemas": "workspace:*",
-    "fast-xml-parser": "^5.2.2",
-    "jsdom": "^26.1.0",
+    "fast-xml-parser": "^5.10.1",
+    "jsdom": "^29.1.1",
     "jszip": "^3.10.1",
-    "yargs": "^17.7.2"
+    "yargs": "^18.0.0"
   }
 }

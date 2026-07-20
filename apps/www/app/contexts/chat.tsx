@@ -7,12 +7,10 @@ import { type StoreApi, createStore } from 'zustand/vanilla';
 
 export type ChatState = {
   chat: Chat | null;
-  modelId: string | null;
 };
 
 export type ChatActions = {
   setChat: React.Dispatch<React.SetStateAction<Chat | null>>;
-  setModelId: React.Dispatch<React.SetStateAction<string | null>>;
 };
 
 export type ChatStore = ChatState & ChatActions;
@@ -23,11 +21,10 @@ export const ChatContext = createContext<ChatContextValue | null>(null);
 
 export type ChatProviderProps = {
   chat?: Chat | null;
-  modelId?: string | null;
   children: ReactNode;
 };
 
-export const ChatProvider = ({ chat, modelId, children }: ChatProviderProps) => {
+export const ChatProvider = ({ chat, children }: ChatProviderProps) => {
   const storeRef = useRef<ChatContextValue>(null);
 
   if (!storeRef.current) {
@@ -35,7 +32,6 @@ export const ChatProvider = ({ chat, modelId, children }: ChatProviderProps) => 
       persist(
         (set, get) => ({
           chat: chat ?? null,
-          modelId: modelId ?? null,
           setChat: (input) => {
             let chat: Chat | null;
             if (typeof input === 'function') {
@@ -44,15 +40,6 @@ export const ChatProvider = ({ chat, modelId, children }: ChatProviderProps) => 
               chat = input;
             }
             set({ chat });
-          },
-          setModelId: (input) => {
-            let modelId: string | null;
-            if (typeof input === 'function') {
-              modelId = input(get().modelId);
-            } else {
-              modelId = input;
-            }
-            set({ modelId });
           },
         }),
         { name: 'chat' },
@@ -65,13 +52,14 @@ export const ChatProvider = ({ chat, modelId, children }: ChatProviderProps) => 
       storeRef.current.setState((s) => ({
         ...s,
         chat: chat ?? s.chat,
-        modelId: modelId ?? s.modelId,
       }));
     }
-  }, [chat, modelId]);
+  }, [chat]);
 
   return <ChatContext.Provider value={storeRef.current}>{children}</ChatContext.Provider>;
 };
+
+const selectChatStore = (state: ChatStore) => state;
 
 export const useChatStore = <T = ChatStore>(selector?: (state: ChatStore) => T): T => {
   const chatStoreContext = useContext(ChatContext);
@@ -79,9 +67,8 @@ export const useChatStore = <T = ChatStore>(selector?: (state: ChatStore) => T):
     throw new Error('useChatStore must be used within ChatProvider');
   }
 
-  if (!selector) {
-    return useStore(chatStoreContext) as T;
-  }
-
-  return useStore(chatStoreContext, useShallow(selector));
+  return useStore(
+    chatStoreContext,
+    useShallow(selector ?? (selectChatStore as (state: ChatStore) => T)),
+  );
 };

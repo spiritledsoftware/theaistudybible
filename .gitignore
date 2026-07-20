@@ -1,10 +1,8 @@
 # dependencies
 node_modules
 
-# sst
-.sst
-**/sst-env.d.ts
-!/sst-env.d.ts
+# Alchemy local state
+.alchemy
 
 # misc
 .DS_Store
@@ -15,6 +13,9 @@ node_modules
 
 # TurboRepo
 .turbo
+
+# Wrangler build state
+**/.wrangler/
 
 # Local LibSQL DB
 .libsql.db*

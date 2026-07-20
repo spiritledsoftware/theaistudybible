@@ -1,11 +1,10 @@
-import { sqs } from '@/core/queues';
+import { db } from '@/core/database';
+import { env } from '@/core/env';
 import type { DataSource } from '@/schemas/data-sources/types';
 import { requireAdminMiddleware } from '@/www/server/middleware/auth';
-import { SendMessageCommand } from '@aws-sdk/client-sqs';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { createServerFn } from '@tanstack/react-start';
 import { toast } from 'sonner';
-import { Resource } from 'sst';
 import { z } from 'zod';
 import { Button } from '../../ui/button';
 
@@ -17,15 +16,14 @@ const queueSyncDataSource = createServerFn({ method: 'POST' })
     }),
   )
   .handler(async ({ data }) => {
-    const response = await sqs.send(
-      new SendMessageCommand({
-        QueueUrl: Resource.DataSourcesSyncQueue.url,
-        MessageBody: JSON.stringify({ id: data.id, manual: true }),
-      }),
-    );
-    if (response.$metadata.httpStatusCode !== 200) {
-      throw new Error('Failed to queue data source sync');
+    const source = await db.query.dataSources.findFirst({
+      where: (table, { eq }) => eq(table.id, data.id),
+      columns: { approvalStatus: true },
+    });
+    if (source?.approvalStatus !== 'APPROVED') {
+      throw new Error('Grounding Source must be approved before indexing');
     }
+    await env.GROUNDING_SOURCE_QUEUE.send({ id: data.id, manual: true });
     return { success: true };
   });
 
@@ -50,7 +48,11 @@ const SyncDataSourceButton = ({ dataSource, ...props }: SyncDataSourceButtonProp
   });
 
   return (
-    <Button disabled={dataSource.type === 'FILE'} onClick={() => handleClick.mutate()} {...props} />
+    <Button
+      disabled={dataSource.approvalStatus !== 'APPROVED' || handleClick.isPending}
+      onClick={() => handleClick.mutate()}
+      {...props}
+    />
   );
 };
 

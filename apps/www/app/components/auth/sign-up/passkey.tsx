@@ -1,3 +1,4 @@
+import { env } from '@/core/env';
 import { lucia } from '@/core/auth';
 import {
   type WebAuthnUserCredential,
@@ -32,7 +33,6 @@ import { KeyIcon } from 'lucide-react';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
-import { Resource } from 'sst';
 import { z } from 'zod';
 import { Button } from '../../ui/button';
 import {
@@ -87,7 +87,7 @@ const signUpWithPasskey = createServerFn({ method: 'POST' })
     if (attestationStatement.format !== AttestationStatementFormat.None) {
       throw new Error('Invalid attestation statement format');
     }
-    if (!authenticatorData.verifyRelyingPartyIdHash(new URL(Resource.WebAppUrl.value).hostname)) {
+    if (!authenticatorData.verifyRelyingPartyIdHash(new URL(env.WEB_APP_URL).hostname)) {
       throw new Error('Invalid relying party ID hash');
     }
     if (!authenticatorData.userPresent || !authenticatorData.userVerified) {
@@ -105,7 +105,7 @@ const signUpWithPasskey = createServerFn({ method: 'POST' })
     if (!(await verifyWebAuthnChallenge(clientData.challenge))) {
       throw new Error('Invalid challenge');
     }
-    if (clientData.origin !== Resource.WebAppUrl.value) {
+    if (clientData.origin !== env.WEB_APP_URL) {
       throw new Error('Invalid origin');
     }
     if (clientData.crossOrigin !== null && clientData.crossOrigin) {

@@ -1,7 +1,20 @@
-import { Redis } from '@upstash/redis';
-import { Resource } from 'sst';
+import { env } from './env';
 
-export const cache = new Redis({
-  url: Resource.UpstashRedis.restUrl,
-  token: Resource.UpstashRedis.restToken,
-});
+function getCache() {
+  return env.CACHE.getByName('shared');
+}
+
+export const cache = {
+  addToSet(key: string, value: string) {
+    return getCache().addToSet(key, value);
+  },
+  get<T>(key: string) {
+    return getCache().get<T>(key);
+  },
+  removeFromSet(key: string, value: string) {
+    return getCache().removeFromSet(key, value);
+  },
+  set(key: string, value: unknown) {
+    return getCache().set(key, value);
+  },
+};

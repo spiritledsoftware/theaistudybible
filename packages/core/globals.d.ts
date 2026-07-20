@@ -1,5 +1,3 @@
-import '../../sst-env';
-
 import type { lucia } from '@/core/auth';
 import type { users } from '@/core/database/schema';
 import type { PostHog } from 'posthog-node';

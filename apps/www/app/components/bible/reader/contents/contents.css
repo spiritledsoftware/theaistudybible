@@ -12,7 +12,6 @@
 .eb-container blockquote:after,
 .eb-container q:before,
 .eb-container q:after {
-  content: "";
   content: none;
 }
 

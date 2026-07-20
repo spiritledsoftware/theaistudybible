@@ -1,10 +1,11 @@
 import { tool } from 'ai';
 import { z } from 'zod';
+import { protectRetrievedEvidence } from '../retrieved-evidence';
 import { vectorStore } from '../vector-store';
 
 export const bibleVectorStoreTool = tool({
-  description: 'Bible Vector Store: Fetch bible passages for your output.',
-  parameters: z.object({
+  description: 'Semantic Scripture Search: Fetch Bible passages for your output.',
+  inputSchema: z.object({
     terms: z
       .array(
         z.object({
@@ -32,7 +33,10 @@ export const bibleVectorStoreTool = tool({
         terms.map(({ term, weight }) =>
           vectorStore
             .searchDocuments(term, {
-              filter: `(type = "bible" or type = "BIBLE") and bibleAbbreviation = "NASB"`,
+              filter: {
+                type: { $in: ['bible', 'BIBLE'] },
+                bibleAbbreviation: 'NASB',
+              },
               limit: 10,
               withMetadata: true,
               withEmbedding: false,
@@ -53,7 +57,7 @@ export const bibleVectorStoreTool = tool({
 
       return {
         status: 'success',
-        documents: docs,
+        documents: docs.slice(0, 12).map(protectRetrievedEvidence),
       };
     } catch (error) {
       return {
@@ -65,8 +69,8 @@ export const bibleVectorStoreTool = tool({
 });
 
 export const vectorStoreTool = tool({
-  description: 'Vector Store: Fetch relevant resources for your output.',
-  parameters: z.object({
+  description: 'Scripture and Source Search: Fetch approved evidence for your output.',
+  inputSchema: z.object({
     terms: z
       .array(
         z.object({
@@ -94,6 +98,7 @@ export const vectorStoreTool = tool({
         terms.map(({ term, weight }) =>
           vectorStore
             .searchDocuments(term, {
+              filter: [{ type: { $in: ['bible', 'BIBLE'] } }, { approvalStatus: 'APPROVED' }],
               limit: 12,
               withMetadata: true,
               withEmbedding: false,
@@ -114,7 +119,7 @@ export const vectorStoreTool = tool({
 
       return {
         status: 'success',
-        documents: docs.slice(0, 12),
+        documents: docs.slice(0, 12).map(protectRetrievedEvidence),
       };
     } catch (error) {
       return {

@@ -1,9 +1,9 @@
+import { env } from '@/core/env';
 import { Body } from '@/email/components/body';
 import { Head } from '@/email/components/head';
 import { Tailwind } from '@/email/components/tailwind';
 import type { DeadLetterEmailSchema } from '@/email/schemas/dead-letter';
-import { Container, Heading, Html, Img, Preview } from '@react-email/components';
-import { Resource } from 'sst';
+import { Container, Heading, Html, Img, Preview } from 'jsx-email';
 import type { z } from 'zod';
 
 export type DeadLetterEmailProps = Omit<z.infer<typeof DeadLetterEmailSchema>, 'type'>;
@@ -18,7 +18,7 @@ export const DeadLetterEmail = ({ record }: DeadLetterEmailProps) => {
         <Body>
           <Container>
             <Img
-              src={`${Resource.WebAppUrl.value}/logos/light.png`}
+              src={`${env.WEB_APP_URL}/logos/light.png`}
               alt='Logo'
               width={500}
               className='w-1/2'

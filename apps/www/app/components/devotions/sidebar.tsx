@@ -37,15 +37,18 @@ const getDevotions = createServerFn({ method: 'GET' })
   )
   .handler(async ({ data }) => {
     const devotions = await db.query.devotions.findMany({
-      where: data.searchQuery
-        ? (devotions, { or }) =>
-            or(
-              ilike(devotions.topic, `%${data.searchQuery}%`),
-              ilike(devotions.summary, `%${data.searchQuery}%`),
-              ilike(devotions.reflection, `%${data.searchQuery}%`),
-              ilike(devotions.prayer, `%${data.searchQuery}%`),
-            )
-        : undefined,
+      where: (devotions, { and, eq, or }) =>
+        and(
+          eq(devotions.publicationStatus, 'PUBLISHED'),
+          data.searchQuery
+            ? or(
+                ilike(devotions.topic, `%${data.searchQuery}%`),
+                ilike(devotions.summary, `%${data.searchQuery}%`),
+                ilike(devotions.reflection, `%${data.searchQuery}%`),
+                ilike(devotions.prayer, `%${data.searchQuery}%`),
+              )
+            : undefined,
+        ),
       orderBy: (devotions, { desc }) => desc(devotions.createdAt),
       offset: data.offset,
       limit: data.limit,

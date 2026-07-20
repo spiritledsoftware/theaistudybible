@@ -3,23 +3,24 @@ import { formNumberSequenceString } from '@/core/utils/number';
 import { Button } from '@/www/components/ui/button';
 import { H5, H6 } from '@/www/components/ui/typography';
 import { Link } from '@tanstack/react-router';
-import type { ToolInvocation } from 'ai';
+import type { InferToolInput, InferToolOutput } from 'ai';
 import { Highlighter } from 'lucide-react';
-import type { z } from 'zod';
+import type { ToolInvocation } from '.';
 
 export type HighlightVerseToolProps = {
   toolInvocation: ToolInvocation;
 };
 
 export const HighlightVerseTool = (props: HighlightVerseToolProps) => {
-  const toolArgs = props.toolInvocation.args as z.infer<
-    ReturnType<typeof highlightVerseTool>['parameters']
+  const toolArgs = props.toolInvocation.args as InferToolInput<
+    ReturnType<typeof highlightVerseTool>
   >;
 
   const result =
     'result' in props.toolInvocation
-      ? (props.toolInvocation.result as Awaited<
-          ReturnType<ReturnType<typeof highlightVerseTool>['execute']>
+      ? (props.toolInvocation.result as Exclude<
+          InferToolOutput<ReturnType<typeof highlightVerseTool>>,
+          AsyncIterable<unknown>
         >)
       : null;
 

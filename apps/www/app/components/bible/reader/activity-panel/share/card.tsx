@@ -4,7 +4,6 @@ import { DrawerClose } from '@/www/components/ui/drawer';
 import { Textarea } from '@/www/components/ui/textarea';
 import { useBibleReaderStore } from '@/www/contexts/bible-reader';
 import { useCanShare } from '@/www/hooks/use-can-share';
-import { useLocation } from '@tanstack/react-router';
 import { Copy } from 'lucide-react';
 import { useRef } from 'react';
 import { toast } from 'sonner';
@@ -12,7 +11,6 @@ import { useCopyToClipboard } from 'usehooks-ts';
 
 export const ShareCard = () => {
   const brStore = useBibleReaderStore();
-  const location = useLocation();
 
   const canShare = useCanShare();
   const [, copyToClipboard] = useCopyToClipboard();
@@ -52,7 +50,7 @@ export const ShareCard = () => {
               navigator.share({
                 title: brStore.selectedTitle,
                 text: brStore.selectedText,
-                url: `${import.meta.env.PUBLIC_WEBAPP_URL}${location.pathname}${location.search}`,
+                url: window.location.href,
               })
             }
           >

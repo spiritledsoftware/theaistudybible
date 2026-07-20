@@ -1,4 +1,8 @@
 import { db } from '@/core/database';
+import {
+  ApproveDataSourceButton,
+  RejectDataSourceButton,
+} from '@/www/components/admin/data-sources/approve-button';
 import { DeleteDataSourceButton } from '@/www/components/admin/data-sources/delete-button';
 import { EditDataSourceButton } from '@/www/components/admin/data-sources/edit-button';
 import { SyncDataSourceButton } from '@/www/components/admin/data-sources/sync-button';
@@ -9,7 +13,7 @@ import { useInfiniteQuery } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router';
 import { createServerFn } from '@tanstack/react-start';
 import { formatDate } from 'date-fns';
-import { Pencil, RefreshCw, Trash } from 'lucide-react';
+import { Pencil, RefreshCw, ShieldCheck, ShieldX, Trash } from 'lucide-react';
 import { z } from 'zod';
 
 export const Route = createFileRoute('/_with-sidebar/admin/data-sources')({
@@ -64,6 +68,10 @@ function RouteComponent() {
                 header: 'Schedule',
               },
               {
+                accessorKey: 'approvalStatus',
+                header: 'Approval',
+              },
+              {
                 accessorKey: 'numberOfDocuments',
                 header: 'Documents',
               },
@@ -88,6 +96,24 @@ function RouteComponent() {
                 header: 'Actions',
                 cell: (props) => (
                   <div className='flex gap-1'>
+                    <ApproveDataSourceButton
+                      variant='ghost'
+                      size='icon'
+                      dataSource={props.row.original}
+                      className='size-8'
+                      title='Approve Grounding Source'
+                    >
+                      <ShieldCheck />
+                    </ApproveDataSourceButton>
+                    <RejectDataSourceButton
+                      variant='ghost'
+                      size='icon'
+                      dataSource={props.row.original}
+                      className='size-8'
+                      title='Reject Grounding Source'
+                    >
+                      <ShieldX />
+                    </RejectDataSourceButton>
                     <SyncDataSourceButton
                       variant='ghost'
                       size='icon'

@@ -67,6 +67,7 @@ export function TextContent({ content, style, props, highlights, className }: Te
   }, [highlightColor]);
 
   return (
+    // biome-ignore lint/a11y/noStaticElementInteractions: Conditional button semantics are applied only to selectable verse text
     <span
       id={content.id}
       data-type={content.type}
@@ -82,7 +83,15 @@ export function TextContent({ content, style, props, highlights, className }: Te
       style={{
         backgroundColor: bgColor,
       }}
-      onClick={handleClick}
+      role={content.verseNumber === undefined ? undefined : 'button'}
+      tabIndex={content.verseNumber === undefined ? undefined : 0}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          handleClick();
+        }
+      }}
+      onClick={content.verseNumber === undefined ? undefined : handleClick}
     >
       {content.text}
     </span>

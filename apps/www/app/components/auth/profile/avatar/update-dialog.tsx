@@ -1,5 +1,3 @@
-import { s3 } from '@/core/storage';
-import { createId } from '@/core/utils/id';
 import { Button } from '@/www/components/ui/button';
 import {
   Dialog,
@@ -9,42 +7,11 @@ import {
   DialogTrigger,
 } from '@/www/components/ui/dialog';
 import { useAuth } from '@/www/hooks/use-auth';
-import { requireAuthMiddleware } from '@/www/server/middleware/auth';
-import { PutObjectCommand } from '@aws-sdk/client-s3';
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { useMutation } from '@tanstack/react-query';
-import { createServerFn } from '@tanstack/react-start';
 import { Pencil } from 'lucide-react';
 import { type ChangeEvent, useState } from 'react';
 import { toast } from 'sonner';
-import { Resource } from 'sst';
-import { z } from 'zod';
 import { Avatar, AvatarFallback, AvatarImage } from '../../../ui/avatar';
-
-const requestUpload = createServerFn({ method: 'POST' })
-  .middleware([requireAuthMiddleware])
-  .validator(
-    z.object({
-      name: z.string(),
-      contentType: z.string(),
-      size: z.number(),
-    }),
-  )
-  .handler(async ({ data, context }) => {
-    const key = `${context.user.id}/${createId()}_${data.name}`;
-    const presignedUrl = await getSignedUrl(
-      s3,
-      new PutObjectCommand({
-        Bucket: Resource.ProfileImagesBucket.name,
-        Key: key,
-        ContentType: data.contentType,
-        ContentLength: data.size,
-        Metadata: { 'user-id': context.user.id },
-      }),
-      { expiresIn: 3600 },
-    );
-    return { presignedUrl, key };
-  });
 
 export function UpdateAvatarDialog() {
   const { user, refetch } = useAuth();
@@ -56,21 +23,24 @@ export function UpdateAvatarDialog() {
 
   const handleUpdateAvatar = useMutation({
     mutationFn: async (file: File) => {
-      const { presignedUrl } = await requestUpload({
-        data: { name: file.name, contentType: file.type, size: file.size },
+      const params = new URLSearchParams({ kind: 'profile', name: file.name });
+      const response = await fetch(`/api/upload?${params}`, {
+        method: 'POST',
+        headers: { 'Content-Type': file.type },
+        body: file,
       });
-      const response = await fetch(presignedUrl, { method: 'PUT', body: file });
-      if (!response.ok) throw new Error(`Failed to upload avatar: ${response.statusText}`);
+      if (!response.ok) {
+        const result = (await response.json()) as { error?: string };
+        throw new Error(result.error ?? 'Failed to upload avatar');
+      }
     },
     onMutate: () =>
       setToastId(toast.loading('Updating avatar...', { duration: Number.POSITIVE_INFINITY })),
     onSuccess: () => {
       toast.dismiss(toastId);
-      toast.success('Avatar updated, please wait a few seconds for the change to take effect');
+      toast.success('Avatar updated');
       setOpen(false);
-      // Need to wait a few seconds for the
-      // bucket function to update the user
-      setTimeout(() => refetch(), 5000);
+      void refetch();
     },
     onError: (error) => {
       toast.dismiss(toastId);

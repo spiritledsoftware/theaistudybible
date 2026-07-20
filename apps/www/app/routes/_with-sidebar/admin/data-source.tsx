@@ -1,8 +1,6 @@
 import { db } from '@/core/database';
 import { dataSources } from '@/core/database/schema';
-import { s3 } from '@/core/storage';
-import { transformKeys } from '@/core/utils/object';
-import { CreateDataSourceSchema } from '@/schemas/data-sources';
+import { CreateDataSourceSchema, SourceChristianTraditionSchema } from '@/schemas/data-sources';
 import { Button } from '@/www/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/www/components/ui/card';
 import {
@@ -30,97 +28,76 @@ import {
 } from '@/www/components/ui/select';
 import { Textarea } from '@/www/components/ui/textarea';
 import { requireAdminMiddleware } from '@/www/server/middleware/auth';
-import { PutObjectCommand } from '@aws-sdk/client-s3';
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router';
 import { createServerFn } from '@tanstack/react-start';
-import { getTableColumns } from 'drizzle-orm/utils';
 import { FolderArchive } from 'lucide-react';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
-import { Resource } from 'sst';
-import { ZodIssueCode, z } from 'zod';
+import { z } from 'zod';
 
 export const Route = createFileRoute('/_with-sidebar/admin/data-source')({
   component: RouteComponent,
 });
 
 const CreateDataSourceFormSchema = CreateDataSourceSchema.extend({
+  type: z.enum(['FILE', 'REMOTE_FILE', 'WEBPAGE']),
+  version: z.string().min(1, 'Version is required'),
+  rightsBasis: z.enum(['LICENSED', 'PERMISSION', 'PUBLIC_DOMAIN']),
+  attribution: z.string().min(1, 'Attribution is required'),
+  traditionClassification: z.array(SourceChristianTraditionSchema).max(9),
   metadata: z
-    .record(z.string(), z.string())
-    .or(
-      z.string().transform((str, ctx) => {
-        if (!str) {
-          return {};
-        }
+    .string()
+    .refine(
+      (value) => {
         try {
-          return JSON.parse(str);
+          JSON.parse(value);
+          return true;
         } catch {
-          ctx.addIssue({
-            code: ZodIssueCode.custom,
-            message: 'Invalid JSON',
-          });
-          return z.NEVER;
+          return false;
         }
-      }),
+      },
+      { message: 'Invalid JSON' },
     )
     .optional(),
   file: z
     .instanceof(File)
-    .refine((file) => file.size < 100 * 1024 * 1024, {
-      message: 'File must be less than 100MB',
+    .refine((file) => file.size <= 25 * 1024 * 1024, {
+      message: 'File must be 25MB or smaller',
     })
     .refine(
-      (file) => {
-        const allowedTypes = [
-          'application/pdf',
-          'text/csv',
-          'text/plain',
-          'application/msword',
-          'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-        ];
-        return allowedTypes.includes(file.type);
-      },
+      (file) => ['application/pdf', 'text/html', 'text/markdown', 'text/plain'].includes(file.type),
       {
-        message: 'File must be a PDF, CSV, TXT or Word document',
+        message: 'File must be PDF, HTML, plain text, or Markdown',
       },
     )
     .optional(),
 });
 
+const CreateDataSourceInputSchema = CreateDataSourceFormSchema.omit({
+  file: true,
+  metadata: true,
+}).extend({
+  metadata: z.record(z.string(), z.json()).optional(),
+});
+
+const uploadResponseSchema = z.object({
+  error: z.string().optional(),
+  url: z.string().optional(),
+  checksum: z.string().optional(),
+});
+
 const createDataSource = createServerFn({ method: 'POST' })
   .middleware([requireAdminMiddleware])
-  .validator(CreateDataSourceFormSchema.omit({ file: true }))
+  .validator(CreateDataSourceInputSchema)
   .handler(async ({ data }) => {
-    const [dataSource] = await db.insert(dataSources).values(data).returning();
+    const [dataSource] = await db
+      .insert(dataSources)
+      .values({ ...data, approvalStatus: 'PENDING', approvedAt: null, approvedBy: null })
+      .returning();
     return { dataSource };
-  });
-
-const getPresignedUrl = createServerFn({ method: 'GET' })
-  .middleware([requireAdminMiddleware])
-  .validator(
-    z.object({
-      name: z.string(),
-      contentType: z.string(),
-      metadata: z.record(z.string(), z.string()).optional(),
-    }),
-  )
-  .handler(async ({ data }) => {
-    const { name, contentType, metadata } = data;
-    const command = new PutObjectCommand({
-      Bucket: Resource.DataSourceFilesBucket.name,
-      Key: name,
-      ContentType: contentType,
-      Metadata: transformKeys(metadata ?? {}, 'toKebab'),
-    });
-    return {
-      presignedUrl: await getSignedUrl(s3, command, {
-        expiresIn: 60 * 60 * 24,
-      }),
-    };
   });
 
 function RouteComponent() {
@@ -130,40 +107,45 @@ function RouteComponent() {
     resolver: zodResolver(CreateDataSourceFormSchema),
     defaultValues: {
       metadata: JSON.stringify({ category: '', title: '', author: '' }, null, 2),
+      version: 'unspecified',
+      approvalStatus: 'PENDING',
+      traditionClassification: [],
       syncSchedule: 'NEVER',
     },
   });
 
   const onSubmit = useMutation({
     mutationFn: async (values: z.input<typeof CreateDataSourceFormSchema>) => {
+      let uploadedUrl = values.url;
+      let checksum = values.checksum;
       if (values.type === 'FILE' && values.file) {
-        const { presignedUrl } = await getPresignedUrl({
-          data: {
-            name: values.name,
-            contentType: values.file.type,
-            metadata: {
-              originalName: values.file.name,
-              size: values.file.size.toString(),
-            },
-          },
+        const params = new URLSearchParams({
+          kind: 'source',
+          name: values.file.name,
         });
-
-        await fetch(presignedUrl, {
-          method: 'PUT',
+        const response = await fetch(`/api/upload?${params}`, {
+          method: 'POST',
+          headers: { 'Content-Type': values.file.type },
           body: values.file,
-          headers: {
-            'Content-Type': values.file.type,
-          },
         });
+        const result = uploadResponseSchema.parse(await response.json());
+        if (!response.ok || !result.url || !result.checksum) {
+          throw new Error(result.error ?? 'Failed to upload Grounding Source');
+        }
+        uploadedUrl = result.url;
+        checksum = result.checksum;
       }
 
       const { metadata, file, ...rest } = values;
-      return createDataSource({
+      const { dataSource } = await createDataSource({
         data: {
           ...rest,
+          url: uploadedUrl,
+          checksum,
           metadata: typeof metadata === 'string' ? JSON.parse(metadata) : metadata,
         },
       });
+      return { dataSource };
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['dataSources'] });
@@ -195,7 +177,12 @@ function RouteComponent() {
                     <FormLabel>Type</FormLabel>
                     <Select
                       value={field.value}
-                      onValueChange={(value: string) => field.onChange(value || 'WEB_CRAWL')}
+                      onValueChange={(value: 'FILE' | 'REMOTE_FILE' | 'WEBPAGE') => {
+                        field.onChange(value);
+                        if (value === 'FILE') {
+                          form.setValue('url', 'r2://private-sources/pending');
+                        }
+                      }}
                     >
                       <FormControl>
                         <SelectTrigger className='w-fit min-w-24'>
@@ -203,7 +190,7 @@ function RouteComponent() {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {getTableColumns(dataSources).type.enumValues.map((type) => (
+                        {(['FILE', 'REMOTE_FILE', 'WEBPAGE'] as const).map((type) => (
                           <SelectItem key={type} value={type}>
                             {type}
                           </SelectItem>
@@ -228,19 +215,109 @@ function RouteComponent() {
                 )}
               />
             </div>
+            <div className='grid gap-4 md:grid-cols-2'>
+              <FormField
+                control={form.control}
+                name='version'
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Edition or Version</FormLabel>
+                    <FormControl>
+                      <Input {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name='rightsBasis'
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Rights Basis</FormLabel>
+                    <Select value={field.value ?? ''} onValueChange={field.onChange}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder='Select verified rights basis' />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value='LICENSED'>Licensed</SelectItem>
+                        <SelectItem value='PERMISSION'>Permission granted</SelectItem>
+                        <SelectItem value='PUBLIC_DOMAIN'>Public domain</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
             <FormField
               control={form.control}
-              name='url'
+              name='attribution'
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>URL</FormLabel>
+                  <FormLabel>Required Attribution</FormLabel>
                   <FormControl>
-                    <Input type='url' {...field} />
+                    <Textarea {...field} value={field.value ?? ''} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
+            <FormField
+              control={form.control}
+              name='traditionClassification'
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Christian Traditions (comma-separated)</FormLabel>
+                  <FormControl>
+                    <Input
+                      value={field.value.join(', ')}
+                      onChange={(event) =>
+                        field.onChange(
+                          event.target.value
+                            .split(',')
+                            .map((value) => value.trim())
+                            .filter(Boolean),
+                        )
+                      }
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            {form.watch('type') !== 'FILE' && (
+              <FormField
+                control={form.control}
+                name='checksum'
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Expected SHA-256 Checksum</FormLabel>
+                    <FormControl>
+                      <Input {...field} value={field.value ?? ''} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
+            {form.watch('type') !== 'FILE' && (
+              <FormField
+                control={form.control}
+                name='url'
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>HTTPS Origin</FormLabel>
+                    <FormControl>
+                      <Input type='url' {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
             <FormField
               control={form.control}
               name='metadata'
@@ -266,7 +343,7 @@ function RouteComponent() {
                         value={fileState}
                         onChange={(files) => {
                           setFileState(files);
-                          onChange(files);
+                          onChange(files?.[0]);
                         }}
                       >
                         <FileInputRoot className='h-32'>

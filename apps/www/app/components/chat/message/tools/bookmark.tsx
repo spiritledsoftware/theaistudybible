@@ -2,23 +2,24 @@ import type { bookmarkChapterTool } from '@/ai/chat/tools';
 import { Button } from '@/www/components/ui/button';
 import { H5, H6 } from '@/www/components/ui/typography';
 import { Link } from '@tanstack/react-router';
-import type { ToolInvocation } from 'ai';
+import type { InferToolInput, InferToolOutput } from 'ai';
 import { Bookmark } from 'lucide-react';
-import type { z } from 'zod';
+import type { ToolInvocation } from '.';
 
 export type BookmarkToolProps = {
   toolInvocation: ToolInvocation;
 };
 
 export const BookmarkTool = (props: BookmarkToolProps) => {
-  const toolArgs = props.toolInvocation.args as z.infer<
-    ReturnType<typeof bookmarkChapterTool>['parameters']
+  const toolArgs = props.toolInvocation.args as InferToolInput<
+    ReturnType<typeof bookmarkChapterTool>
   >;
 
   const result =
     'result' in props.toolInvocation
-      ? (props.toolInvocation.result as Awaited<
-          ReturnType<ReturnType<typeof bookmarkChapterTool>['execute']>
+      ? (props.toolInvocation.result as Exclude<
+          InferToolOutput<ReturnType<typeof bookmarkChapterTool>>,
+          AsyncIterable<unknown>
         >)
       : null;
 

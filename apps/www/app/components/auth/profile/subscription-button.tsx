@@ -54,7 +54,7 @@ const renew = createServerFn({ method: 'POST' })
 export type SubscriptionButtonProps = Omit<ComponentProps<typeof Button>, 'children' | 'onClick'>;
 
 export const SubscriptionButton = (props: SubscriptionButtonProps) => {
-  const { isActive, subscription, refetch, isPro } = useSubscription();
+  const { isActive, subscription, refetch } = useSubscription();
   const [isOpen, setIsOpen] = useState(false);
 
   const handleUnsubscribe = useMutation({
@@ -84,33 +84,36 @@ export const SubscriptionButton = (props: SubscriptionButtonProps) => {
   });
 
   if (isActive && subscription.cancelAtPeriodEnd) {
-    <Button onClick={() => handleRenew.mutate()} {...props}>
-      Renew
-    </Button>;
+    return (
+      <Button onClick={() => handleRenew.mutate()} {...props}>
+        Renew
+      </Button>
+    );
   }
 
   if (isActive) {
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>
-        <Button {...props}>Unsubscribe</Button>
-      </DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Unsubscribe</DialogTitle>
-        </DialogHeader>
-        <DialogDescription>
-          Are you sure you want to unsubscribe from the {isPro ? 'Pro' : 'Ministry'} plan? Your
-          subscription will end on{' '}
-          {formatDate(new Date(subscription.currentPeriodEnd * 1000), 'MMMM d, yyyy')}
-        </DialogDescription>
-        <DialogFooter>
-          <Button variant='outline' onClick={() => setIsOpen(false)}>
-            Cancel
-          </Button>
-          <Button onClick={() => handleUnsubscribe.mutate()}>Unsubscribe</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>;
+    return (
+      <Dialog open={isOpen} onOpenChange={setIsOpen}>
+        <DialogTrigger asChild>
+          <Button {...props}>Unsubscribe</Button>
+        </DialogTrigger>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Unsubscribe</DialogTitle>
+          </DialogHeader>
+          <DialogDescription>
+            Are you sure you want to unsubscribe? Your subscription will end on{' '}
+            {formatDate(new Date(subscription.currentPeriodEnd * 1000), 'MMMM d, yyyy')}
+          </DialogDescription>
+          <DialogFooter>
+            <Button variant='outline' onClick={() => setIsOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={() => handleUnsubscribe.mutate()}>Unsubscribe</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    );
   }
 
   return (

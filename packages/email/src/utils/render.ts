@@ -1,4 +1,4 @@
-import { render } from '@react-email/components';
+import { render } from 'jsx-email';
 import ForgotPasswordEmail from '../emails/auth/forgot-password';
 import DailyDevotionEmail from '../emails/daily-devotion';
 import DeadLetterEmail from '../emails/dead-letter';

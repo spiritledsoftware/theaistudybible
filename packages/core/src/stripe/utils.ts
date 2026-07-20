@@ -1,4 +1,4 @@
-import { Resource } from 'sst';
+import { env } from '../env';
 import { stripe } from '.';
 import { cache } from '../cache';
 import type { SubscriptionData } from './types';
@@ -69,13 +69,6 @@ export async function getStripeData(customerId?: string | null): Promise<Subscri
 export function isPro(subData: SubscriptionData): boolean {
   return (
     (subData.status === 'active' || subData.status === 'trialing') &&
-    subData.productId === Resource.ProSubProduct.id
-  );
-}
-
-export function isMinistry(subData: SubscriptionData): boolean {
-  return (
-    (subData.status === 'active' || subData.status === 'trialing') &&
-    subData.productId === Resource.MinistrySubProduct.id
+    [env.PRO_MONTHLY_PRICE_ID, env.PRO_YEARLY_PRICE_ID].includes(subData.priceId)
   );
 }

@@ -14,6 +14,7 @@ export const Route = createFileRoute('/_with-footer/_with-header/devotion/')({
 
 const getLatestDevotion = createServerFn({ method: 'GET' }).handler(async () => {
   const devotion = await db.query.devotions.findFirst({
+    where: (devotions, { eq }) => eq(devotions.publicationStatus, 'PUBLISHED'),
     orderBy: (devotions, { desc }) => desc(devotions.createdAt),
   });
   return { devotion: devotion ?? null };

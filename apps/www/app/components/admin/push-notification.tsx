@@ -1,13 +1,9 @@
-import { db } from '@/core/database';
-import { pushSubscriptions } from '@/core/database/schema';
+import { env } from '@/core/env';
 import { requireAdminMiddleware } from '@/www/server/middleware/auth';
 import { useMutation } from '@tanstack/react-query';
 import { createServerFn } from '@tanstack/react-start';
-import { eq } from 'drizzle-orm';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { Resource } from 'sst';
-import webPush from 'web-push';
 import { z } from 'zod';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '../ui/card';
@@ -24,31 +20,11 @@ const triggerPushNotification = createServerFn({ method: 'POST' })
     }),
   )
   .handler(async ({ data }) => {
-    webPush.setVapidDetails(
-      'mailto:support@theaistudybible.com',
-      Resource.VapidPublicKey.value,
-      Resource.VapidPrivateKey.value,
-    );
-
-    const subscriptions = await db.query.pushSubscriptions.findMany({});
-    await Promise.all(
-      subscriptions.map((subscription) =>
-        webPush
-          .sendNotification(
-            {
-              endpoint: subscription.endpoint,
-              keys: { p256dh: subscription.p256dh, auth: subscription.auth },
-            },
-            JSON.stringify({ title: data.title, body: data.body, url: data.url || '/' }),
-          )
-          .catch(async (error) => {
-            console.error(error);
-            if (error.statusCode === 410) {
-              await db.delete(pushSubscriptions).where(eq(pushSubscriptions.id, subscription.id));
-            }
-          }),
-      ),
-    );
+    await env.NOTIFICATION_QUEUE.send({
+      title: data.title,
+      body: data.body,
+      url: data.url || '/',
+    });
     return { success: true };
   });
 

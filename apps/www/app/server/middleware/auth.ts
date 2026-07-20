@@ -11,7 +11,7 @@ type AuthContext = {
   roles: Role[] | null;
 };
 
-export const authMiddleware = createMiddleware().server(async ({ next }) => {
+export const authMiddleware = createMiddleware({ type: 'function' }).server(async ({ next }) => {
   const { session, user } = await authenticate();
   if (!session || !user) {
     return next({
@@ -22,7 +22,7 @@ export const authMiddleware = createMiddleware().server(async ({ next }) => {
   return next({ context: { session, user, roles, settings } as AuthContext });
 });
 
-export const requireAuthMiddleware = createMiddleware()
+export const requireAuthMiddleware = createMiddleware({ type: 'function' })
   .middleware([authMiddleware])
   .server(({ context, next }) => {
     if (!context.session || !context.user) {
@@ -39,7 +39,7 @@ export const requireAuthMiddleware = createMiddleware()
     });
   });
 
-export const requireAdminMiddleware = createMiddleware()
+export const requireAdminMiddleware = createMiddleware({ type: 'function' })
   .middleware([requireAuthMiddleware])
   .server(({ context, next }) => {
     if (!context.roles?.some((role) => role.id === 'admin')) {

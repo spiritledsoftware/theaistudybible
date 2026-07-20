@@ -101,15 +101,16 @@ export const BibleProvider = ({ bible, book, chapter, verse, children }: BiblePr
   return <BibleContext.Provider value={storeRef.current}>{children}</BibleContext.Provider>;
 };
 
+const selectBibleStore = (state: BibleStore) => state;
+
 export const useBibleStore = <T = BibleStore>(selector?: (state: BibleStore) => T): T => {
   const bibleStoreContext = useContext(BibleContext);
   if (!bibleStoreContext) {
     throw new Error('useBibleStore must be used within BibleProvider');
   }
 
-  if (!selector) {
-    return useStore(bibleStoreContext) as T;
-  }
-
-  return useStore(bibleStoreContext, useShallow(selector));
+  return useStore(
+    bibleStoreContext,
+    useShallow(selector ?? (selectBibleStore as (state: BibleStore) => T)),
+  );
 };

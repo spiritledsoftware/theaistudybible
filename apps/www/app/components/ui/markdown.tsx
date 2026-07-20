@@ -1,6 +1,7 @@
 import { cn } from '@/www/lib/utils';
 import { type ComponentProps, useMemo } from 'react';
 import ReactMarkdown from 'react-markdown';
+import { sanitizeMarkdownUrl } from './markdown-url';
 import { Button } from './button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from './dialog';
 import * as Typography from './typography';
@@ -105,7 +106,9 @@ export const Markdown = ({
 
   return (
     <div className={cn('whitespace-pre-wrap', className)} {...props}>
-      <ReactMarkdown components={components}>{children}</ReactMarkdown>
+      <ReactMarkdown components={components} urlTransform={sanitizeMarkdownUrl}>
+        {children}
+      </ReactMarkdown>
     </div>
   );
 };

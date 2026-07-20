@@ -1,12 +1,11 @@
 import type { Config } from 'tailwindcss';
 import tailwindcssAnimate from 'tailwindcss-animate';
-import tailwindcssSafeArea from 'tailwindcss-safe-area';
 import plugin from 'tailwindcss/plugin';
 
 /** @type {import('tailwindcss').Config} */
 export default {
   darkMode: ['variant', ['.dark &']],
-  content: ['./src/**/*.{ts,tsx,js,jsx,mdx,html}'],
+  content: ['./app/**/*.{ts,tsx,js,jsx,mdx,html}'],
   theme: {
     container: {
       center: true,
@@ -170,7 +169,6 @@ export default {
   },
   plugins: [
     tailwindcssAnimate,
-    tailwindcssSafeArea,
     plugin(({ addVariant }) => {
       addVariant('standalone', '@media (display-mode: standalone)');
     }),

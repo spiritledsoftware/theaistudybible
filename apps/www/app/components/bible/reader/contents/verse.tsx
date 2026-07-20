@@ -14,8 +14,7 @@ export type VerseContentProps = {
   content: VerseContentType;
   notes?: VerseNote[];
   style?: string;
-  // biome-ignore lint/suspicious/noExplicitAny: <explanation>
-  props: any;
+  props: Record<string, string>;
   className?: string;
 };
 
@@ -49,9 +48,9 @@ export const VerseContent = (props: VerseContentProps) => {
           </PopoverTrigger>
           <PopoverContent className='flex max-h-96 w-80 flex-col gap-2 overflow-y-auto p-4'>
             <H5>User note{notes!.length > 1 ? 's' : ''}</H5>
-            {notes!.map((note, idx) => (
+            {notes!.map((note) => (
               <div
-                key={`${note.bibleAbbreviation}-${note.verseCode}-${idx}`}
+                key={note.id}
                 className='flex max-h-52 w-full shrink-0 flex-col overflow-y-auto rounded-lg border p-2'
               >
                 <Markdown>{note.content}</Markdown>

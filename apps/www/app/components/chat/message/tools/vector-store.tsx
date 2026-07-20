@@ -11,9 +11,9 @@ import { H5, H6 } from '@/www/components/ui/typography';
 import { cn } from '@/www/lib/utils';
 import { useAutoAnimate } from '@formkit/auto-animate/react';
 import { Link } from '@tanstack/react-router';
-import type { ToolInvocation } from 'ai';
+import type { InferToolInput, InferToolOutput } from 'ai';
 import { ArrowUpRightFromSquare, BookOpen as BookOpenIcon, FileIcon, Search } from 'lucide-react';
-import type { z } from 'zod';
+import type { ToolInvocation } from '.';
 
 export type VectorStoreToolProps = {
   toolInvocation: ToolInvocation;
@@ -23,14 +23,13 @@ export type VectorStoreToolProps = {
 export const VectorStoreTool = (props: VectorStoreToolProps) => {
   const [containerRef] = useAutoAnimate();
 
-  const toolArgs = props.toolInvocation.args as z.infer<
-    ReturnType<typeof vectorStoreTool>['parameters']
-  >;
+  const toolArgs = props.toolInvocation.args as InferToolInput<ReturnType<typeof vectorStoreTool>>;
 
   const result =
     'result' in props.toolInvocation
-      ? (props.toolInvocation.result as Awaited<
-          ReturnType<ReturnType<typeof vectorStoreTool>['execute']>
+      ? (props.toolInvocation.result as Exclude<
+          InferToolOutput<ReturnType<typeof vectorStoreTool>>,
+          AsyncIterable<unknown>
         >)
       : null;
 
@@ -44,9 +43,9 @@ export const VectorStoreTool = (props: VectorStoreToolProps) => {
         <div className='flex w-full flex-col'>
           <H6 className='font-goldman font-normal'>Queries</H6>
           <div ref={containerRef} className='flex flex-wrap gap-2 px-2 py-1'>
-            {toolArgs.terms.map((searchTerm, index) => (
+            {toolArgs.terms.map((searchTerm) => (
               <div
-                key={`${searchTerm.term}-${index}`}
+                key={JSON.stringify(searchTerm)}
                 className='rounded-full bg-primary px-2 py-1 text-primary-foreground text-xs'
               >
                 {searchTerm.term}
@@ -69,23 +68,30 @@ export const VectorStoreTool = (props: VectorStoreToolProps) => {
               <AccordionContent>
                 <div className='flex flex-wrap gap-2'>
                   {result.documents.map((doc) => {
-                    const isInternalLink = doc.metadata?.url?.includes(
-                      import.meta.env.PUBLIC_WEBAPP_URL,
-                    );
+                    const url =
+                      typeof doc.metadata?.url === 'string' ? doc.metadata.url : undefined;
+                    const sourceType =
+                      typeof doc.metadata?.type === 'string'
+                        ? doc.metadata.type.toUpperCase()
+                        : undefined;
+                    const name =
+                      typeof doc.metadata?.name === 'string' ? doc.metadata.name : (url ?? '');
+                    const isInternalLink =
+                      url !== undefined && url.startsWith(window.location.origin);
 
                     const linkContent = (
                       <>
                         <span className='mr-1'>
-                          {doc.metadata?.type?.toUpperCase() === 'BIBLE' ? (
+                          {sourceType === 'BIBLE' ? (
                             <BookOpenIcon size={12} />
-                          ) : doc.metadata?.type?.toUpperCase() === 'REMOTE_FILE' ? (
+                          ) : sourceType === 'REMOTE_FILE' ? (
                             <FileIcon size={12} />
                           ) : (
                             <ArrowUpRightFromSquare size={12} />
                           )}
                         </span>
                         <span className='line-clamp-2 text-wrap group-hover:line-clamp-none'>
-                          {doc.metadata?.name ?? doc.metadata?.url ?? ''}
+                          {name}
                         </span>
                       </>
                     );
@@ -94,7 +100,7 @@ export const VectorStoreTool = (props: VectorStoreToolProps) => {
                       <div key={doc.id}>
                         {isInternalLink ? (
                           <Link
-                            to={doc.metadata?.url ?? ''}
+                            to={url ?? ''}
                             className={cn(
                               buttonVariants({ variant: 'outline' }),
                               'group flex h-fit max-w-full items-center rounded-full px-3 py-2 text-xs',
@@ -104,7 +110,7 @@ export const VectorStoreTool = (props: VectorStoreToolProps) => {
                           </Link>
                         ) : (
                           <a
-                            href={doc.metadata?.url ?? ''}
+                            href={url}
                             className={cn(
                               buttonVariants({ variant: 'outline' }),
                               'group flex h-fit max-w-full items-center rounded-full px-3 py-2 text-xs',

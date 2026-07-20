@@ -1,4 +1,4 @@
-import { Body as BodyBase } from '@react-email/components';
+import { Body as BodyBase } from 'jsx-email';
 import { cn } from '../lib/utils';
 
 export type BodyProps = React.ComponentProps<typeof BodyBase>;

@@ -1,4 +1,4 @@
-name: Deploy PR Preview
+name: Deploy PR preview
 
 on:
   pull_request:
@@ -6,112 +6,114 @@ on:
     paths-ignore:
       - 'README.md'
       - '.vscode/**'
-      - '.github/**'
       - '.cursor/**'
       - '.husky/**'
 
-concurrency: pr-${{ github.event.pull_request.number }}
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
 
 env:
-  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  AI_CONTEXT_SIZE: ${{ vars.AI_CONTEXT_SIZE }}
+  ALCHEMY_PASSWORD: ${{ secrets.ALCHEMY_PASSWORD }}
+  ALCHEMY_STATE_TOKEN: ${{ secrets.ALCHEMY_STATE_TOKEN }}
+  APPLE_AUTH_KEY: ${{ secrets.APPLE_AUTH_KEY }}
+  APPLE_CLIENT_ID: ${{ vars.APPLE_CLIENT_ID }}
+  APPLE_CLIENT_SECRET: ${{ secrets.APPLE_CLIENT_SECRET }}
+  APPLE_KEY_ID: ${{ vars.APPLE_KEY_ID }}
+  APPLE_TEAM_ID: ${{ vars.APPLE_TEAM_ID }}
+  CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
   CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-  FLY_ORG: ${{ vars.FLY_ORG }}
-  FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
-  TURSO_ORG: ${{ vars.TURSO_ORG }}
-  TURSO_API_TOKEN: ${{ secrets.TURSO_API_KEY }}
-  UPSTASH_EMAIL: ${{ vars.UPSTASH_EMAIL }}
-  UPSTASH_API_KEY: ${{ secrets.UPSTASH_API_KEY }}
-  STRIPE_API_KEY: ${{ secrets.DEV_STRIPE_SECRET_KEY }}
-  SENTRY_ORG: ${{ vars.SENTRY_ORG }}
-  SENTRY_TEAM: ${{ vars.SENTRY_TEAM }}
-  SENTRY_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+  DONATION_LINK: ${{ vars.DONATION_LINK }}
+  FREE_CHAT_DAILY_LIMIT: ${{ vars.FREE_CHAT_DAILY_LIMIT }}
+  FREE_IMAGE_DAILY_LIMIT: ${{ vars.FREE_IMAGE_DAILY_LIMIT }}
+  FREE_SUGGESTION_DAILY_LIMIT: ${{ vars.FREE_SUGGESTION_DAILY_LIMIT }}
+  GOOGLE_CLIENT_ID: ${{ vars.GOOGLE_CLIENT_ID }}
+  GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+  OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+  OPENROUTER_CHAT_MODEL: ${{ vars.OPENROUTER_CHAT_MODEL }}
+  OPENROUTER_EMBEDDING_DIMENSIONS: ${{ vars.OPENROUTER_EMBEDDING_DIMENSIONS }}
+  OPENROUTER_EMBEDDING_MODEL: ${{ vars.OPENROUTER_EMBEDDING_MODEL }}
+  OPENROUTER_IMAGE_MODEL: ${{ vars.OPENROUTER_IMAGE_MODEL }}
+  OPENROUTER_RERANK_MODEL: ${{ vars.OPENROUTER_RERANK_MODEL }}
+  POSTHOG_API_HOST: ${{ vars.POSTHOG_API_HOST }}
+  POSTHOG_API_KEY: ${{ secrets.POSTHOG_API_KEY }}
+  PRO_CHAT_DAILY_LIMIT: ${{ vars.PRO_CHAT_DAILY_LIMIT }}
+  PRO_IMAGE_DAILY_LIMIT: ${{ vars.PRO_IMAGE_DAILY_LIMIT }}
+  PRO_MONTHLY_PRICE_ID: ${{ vars.DEV_PRO_MONTHLY_PRICE_ID }}
+  PRO_SUGGESTION_DAILY_LIMIT: ${{ vars.PRO_SUGGESTION_DAILY_LIMIT }}
+  PRO_YEARLY_PRICE_ID: ${{ vars.DEV_PRO_YEARLY_PRICE_ID }}
+  SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+  SES_ACCESS_KEY_ID: ${{ secrets.SES_ACCESS_KEY_ID }}
+  SES_SECRET_ACCESS_KEY: ${{ secrets.SES_SECRET_ACCESS_KEY }}
+  STRIPE_SECRET_KEY: ${{ secrets.DEV_STRIPE_SECRET_KEY }}
+  STRIPE_WEBHOOK_SECRET: ${{ secrets.DEV_STRIPE_WEBHOOK_SECRET }}
+  VAPID_PRIVATE_KEY: ${{ secrets.VAPID_PRIVATE_KEY }}
+  VAPID_PUBLIC_KEY: ${{ vars.VAPID_PUBLIC_KEY }}
+  WEB_APP_URL: https://pr-${{ github.event.pull_request.number }}.preview.theaistudybible.com
 
 jobs:
   deploy:
-    name: Deploy
+    name: Verify and deploy preview
+    if: github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
+    environment: preview
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - name: CI Setup
+      - name: CI setup
         uses: ./.github/actions/ci-setup
 
-      - name: Install JQ
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y jq
-      
-      - name: Set SST Stage
-        run: |
-          echo "pr-${{ github.event.pull_request.number }}" > .sst/stage
-
       - name: Type check
-        run: |
-          pnpm run type-check
+        run: pnpm run type-check
 
       - name: Lint
-        run: |
-          pnpm run lint
+        run: pnpm run lint
 
       - name: Test
-        run: |
-          pnpm run test
+        run: pnpm run test
 
-      - name: Deploy
-        run: |
-          pnpm run deploy
+      - name: Deploy Cloudflare preview
+        run: pnpm exec alchemy deploy alchemy.run.ts --stage pr-${{ github.event.pull_request.number }}
 
-      - name: Run DB migrations
-        run: |
-          pnpm run db:migrate
+      - name: Run preview smoke tests
+        env:
+          ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
+          ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+          TEST_USER_EMAIL: ${{ secrets.TEST_USER_EMAIL }}
+          TEST_USER_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
+        run: pnpm run test:e2e
 
-      - name: Seed DB
-        run: |
-          pnpm run db:seed
-
-      - name: Run E2E tests
-        run: |
-          pnpm run test:e2e
-
-      - id: extract_website_url
-        name: Extract website URL
-        run: |
-          sst_output_file=.sst/outputs.json
-          sst_outputs=$(cat $sst_output_file)
-          echo -e "Outputs from SST in JSON:\n$sst_outputs"
-          website_url=$(jq -r '.["Web App URL"]' $sst_output_file)
-          echo "website_url=$website_url" >> $GITHUB_OUTPUT
-
-      - id: pr_comment
-        name: Add comment to PR
+      - name: Publish preview URL
         uses: actions/github-script@v7
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
+            const marker = '<!-- theaistudybible-preview -->';
+            const body = `${marker}\nPreview URL: ${process.env.WEB_APP_URL}`;
             const { data: comments } = await github.rest.issues.listComments({
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: context.issue.number,
             });
-            const comment = comments.find((comment) => comment.body.includes('Preview URL:'));
-            if (comment) {
+            const existing = comments.find((comment) => comment.body?.includes(marker));
+            if (existing) {
               await github.rest.issues.updateComment({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                comment_id: comment.id,
-                body: `Preview URL: ${{ steps.extract_website_url.outputs.website_url }}`,
+                comment_id: existing.id,
+                body,
               });
             } else {
               await github.rest.issues.createComment({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 issue_number: context.issue.number,
-                body: `Preview URL: ${{ steps.extract_website_url.outputs.website_url }}`,
+                body,
               });
             }
-
-      - name: CI Cleanup
-        uses: ./.github/actions/ci-cleanup

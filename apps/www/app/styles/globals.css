@@ -1,8 +1,9 @@
 @import "tailwindcss";
+@import "tailwindcss-safe-area";
 
 @custom-variant dark (&:is(.dark *));
 
-@config '../../tailwind.config.ts';
+@config "../../tailwind.config.ts";
 
 @layer base {
   :root {
@@ -96,7 +97,9 @@
     background-color: hsl(var(--background));
     color: hsl(var(--foreground));
     font-family: Inter, sans-serif;
-    font-feature-settings: "rlig" 1, "calt" 1;
+    font-feature-settings:
+      "rlig" 1,
+      "calt" 1;
   }
 
   h1,

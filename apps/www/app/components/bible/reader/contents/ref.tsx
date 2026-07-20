@@ -7,10 +7,8 @@ import { useMemo } from 'react';
 export type RefContentProps = {
   content: TextContent;
   style: string;
-  // biome-ignore lint/suspicious/noExplicitAny: <explanation>
-  attrs: any;
-  // biome-ignore lint/suspicious/noExplicitAny: <explanation>
-  props: any;
+  attrs: Record<string, string>;
+  props: Record<string, string>;
   className?: string;
 };
 

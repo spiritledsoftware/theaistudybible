@@ -11,14 +11,12 @@
       "@/ai/*": ["./packages/ai/src/*"],
       "@/www": ["./apps/www/src"],
       "@/www/*": ["./apps/www/src/*"],
-      "@/functions": ["./apps/functions/src"],
-      "@/functions/*": ["./apps/functions/src/*"],
       "@/workers": ["./apps/workers/src"],
       "@/workers/*": ["./apps/workers/src/*"],
       "@/scripts": ["./tools/scripts/src"],
       "@/scripts/*": ["./tools/scripts/src/*"]
     }
   },
-  "include": [".sst/platform/config.d.ts", "**/*.ts", "**/*.tsx", "apps/www/src/instrument.mjs"],
+  "include": ["alchemy.run.ts", "drizzle.config.ts"],
   "exclude": ["node_modules", "apps", "packages", "tools"]
 }

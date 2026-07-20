@@ -52,15 +52,16 @@ export const DevotionProvider = ({ devotion, children }: DevotionProviderProps) 
   return <DevotionContext.Provider value={storeRef.current}>{children}</DevotionContext.Provider>;
 };
 
+const selectDevotionStore = (state: DevotionStore) => state;
+
 export const useDevotionStore = <T = DevotionStore>(selector?: (store: DevotionStore) => T): T => {
   const devotionStoreContext = useContext(DevotionContext);
   if (!devotionStoreContext) {
     throw new Error('useDevotionStore must be used within DevotionProvider');
   }
 
-  if (!selector) {
-    return useStore(devotionStoreContext) as T;
-  }
-
-  return useStore(devotionStoreContext, useShallow(selector));
+  return useStore(
+    devotionStoreContext,
+    useShallow(selector ?? (selectDevotionStore as (state: DevotionStore) => T)),
+  );
 };

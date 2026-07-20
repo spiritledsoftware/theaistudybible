@@ -10,7 +10,7 @@ export const numTokensFromString = async (options: {
   if (!encoding && options.model) {
     const { default: registry } = await import('tiktoken/registry.json');
     const { default: models } = await import('tiktoken/model_to_encoding.json');
-    // @ts-ignore
+    // @ts-expect-error
     const registryModel = registry[models[options.model]];
     if (registryModel) {
       const model = await load(registryModel);

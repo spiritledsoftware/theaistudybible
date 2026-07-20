@@ -1,0 +1,3 @@
+# Personalize AI guidance by broad Christian tradition
+
+Add one account-wide Christian Tradition preference for the AI Scripture Assistant. Signed-in readers may choose Catholic, Eastern Orthodox, Anglican, Reformed, Lutheran, Wesleyan/Methodist, Baptist, or Pentecostal/Charismatic framing; those answers use the selected framing without labeling it or volunteering alternatives, unless the reader asks. Anonymous and unconfigured readers are tradition-neutral and receive summaries of the major supported views on disputed questions. Existing free-form AI instructions become presentation-only Assistant Preferences and cannot override tradition, grounding, or safety policy. The single public daily devotional remains shared and tradition-neutral.

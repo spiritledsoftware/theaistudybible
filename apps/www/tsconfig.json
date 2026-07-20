@@ -9,8 +9,13 @@
     "strictNullChecks": true,
     "verbatimModuleSyntax": false,
     "lib": ["ESNext", "ESNext.AsyncIterable", "DOM", "DOM.Iterable", "WebWorker"],
-    "types": ["@types/node", "vinxi/types/client", "vite-plugin-pwa/info", "vite-plugin-pwa/react"],
-    "baseUrl": "./",
+    "types": [
+      "@types/node",
+      "@cloudflare/workers-types",
+      "vite/client",
+      "vite-plugin-pwa/info",
+      "vite-plugin-pwa/react"
+    ],
     "paths": {
       "@/www": ["./app"],
       "@/www/*": ["./app/*"],
@@ -22,8 +27,6 @@
       "@/ai/*": ["../../packages/ai/src/*"],
       "@/email": ["../../packages/email/src"],
       "@/email/*": ["../../packages/email/src/*"],
-      "@/functions": ["../functions/src"],
-      "@/functions/*": ["../functions/src/*"],
       "@/workers": ["../workers/src"],
       "@/workers/*": ["../workers/src/*"],
       "@/scripts": ["../../tools/scripts/src"],
@@ -31,5 +34,5 @@
     }
   },
   "include": ["../../packages/core/globals.d.ts", "**/*.ts", "**/*.tsx"],
-  "exclude": ["node_modules", ".output", ".vinxi"]
+  "exclude": ["node_modules"]
 }

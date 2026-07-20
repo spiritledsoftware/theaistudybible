@@ -1,9 +1,9 @@
+import { env } from '@/core/env';
 import { Body } from '@/email/components/body';
 import { Head } from '@/email/components/head';
 import { Tailwind } from '@/email/components/tailwind';
 import type { ForgotPasswordEmailSchema } from '@/email/schemas/auth/forgot-password';
-import { Container, Heading, Html, Img, Link, Preview, Text } from '@react-email/components';
-import { Resource } from 'sst';
+import { Container, Heading, Html, Img, Link, Preview, Text } from 'jsx-email';
 import type { z } from 'zod';
 
 export type ForgotPasswordEmailProps = Omit<z.infer<typeof ForgotPasswordEmailSchema>, 'type'>;
@@ -18,7 +18,7 @@ export const ForgotPasswordEmail = ({ code }: ForgotPasswordEmailProps) => {
         <Body>
           <Container className='pb-10'>
             <Img
-              src={`${Resource.WebAppUrl.value}/logos/light.png`}
+              src={`${env.WEB_APP_URL}/logos/light.png`}
               alt='Logo'
               width={500}
               className='w-1/2'
@@ -30,7 +30,7 @@ export const ForgotPasswordEmail = ({ code }: ForgotPasswordEmailProps) => {
             <Text>
               Click
               <Link
-                href={`${Resource.WebAppUrl.value}/reset-password?code=${code}`}
+                href={`${env.WEB_APP_URL}/reset-password?code=${code}`}
                 className='mx-1 hover:underline'
               >
                 here

@@ -7,20 +7,21 @@
     "defaultBranch": "main"
   },
   "files": {
-    "ignore": [
-      "**/node_modules",
-      "**/.vscode",
-      "**/.sst",
-      "**/.turbo",
-      "**/.vinxi",
-      "**/.output",
-      "**/dist",
-      "**/pnpm-lock.yaml",
-      "**/migrations",
-      "**/sst-env.d.ts",
-      "packages/core/src/utils/bibles/__tests__/MAT.json",
-      "apps/www/app/routeTree.gen.ts",
-      "apps/www/src/**"
+    "includes": [
+      "**",
+      "!**/node_modules",
+      "!**/.vscode",
+      "!**/.sst",
+      "!**/.turbo",
+      "!**/.vinxi",
+      "!**/.output",
+      "!**/dist",
+      "!**/pnpm-lock.yaml",
+      "!**/migrations",
+      "!**/sst-env.d.ts",
+      "!**/packages/core/src/utils/bibles/__tests__/MAT.json",
+      "!**/apps/www/app/routeTree.gen.ts",
+      "!**/apps/www/src"
     ]
   },
   "formatter": {
@@ -29,13 +30,11 @@
     "indentWidth": 2,
     "lineWidth": 100
   },
-  "organizeImports": {
-    "enabled": true
-  },
+  "assist": { "actions": { "source": { "organizeImports": "on" } } },
   "linter": {
     "enabled": true,
     "rules": {
-      "recommended": true,
+      "preset": "recommended",
       "a11y": {
         "noSvgWithoutTitle": "off",
         "useSemanticElements": "warn",
@@ -63,6 +62,11 @@
       "suspicious": {
         "useAwait": "error"
       }
+    }
+  },
+  "css": {
+    "parser": {
+      "tailwindDirectives": true
     }
   },
   "javascript": {

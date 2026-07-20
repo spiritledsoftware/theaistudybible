@@ -9,13 +9,13 @@ export async function createWebAuthnChallenge() {
   const challenge = new Uint8Array(20);
   crypto.getRandomValues(challenge);
   const encoded = encodeHexLowerCase(challenge);
-  await cache.sadd('webauthn:challenges', encoded);
+  await cache.addToSet('webauthn:challenges', encoded);
   return challenge;
 }
 
 export async function verifyWebAuthnChallenge(challenge: Uint8Array) {
   const encoded = encodeHexLowerCase(challenge);
-  return (await cache.srem('webauthn:challenges', encoded)) === 1;
+  return (await cache.removeFromSet('webauthn:challenges', encoded)) === 1;
 }
 
 export async function getUserPasskeyCredentials(userId: string) {
@@ -59,7 +59,7 @@ export async function deleteUserPasskeyCredential(userId: string, credentialId: 
         eq(passkeyCredentials.userId, userId),
       ),
     );
-  return result.rowsAffected > 0;
+  return result.meta.changes > 0;
 }
 
 export interface WebAuthnUserCredential {

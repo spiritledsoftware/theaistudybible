@@ -10,9 +10,9 @@ import { Image, ImageFallback, ImageImage } from '@/www/components/ui/image';
 import { Markdown } from '@/www/components/ui/markdown';
 import { Spinner } from '@/www/components/ui/spinner';
 import { H5, H6 } from '@/www/components/ui/typography';
-import type { ToolInvocation } from 'ai';
+import type { InferToolInput, InferToolOutput } from 'ai';
 import { Image as ImageIcon } from 'lucide-react';
-import type { z } from 'zod';
+import type { ToolInvocation } from '.';
 
 export type GenerateImageToolProps = {
   toolInvocation: ToolInvocation;
@@ -20,14 +20,15 @@ export type GenerateImageToolProps = {
 };
 
 export const GenerateImageTool = (props: GenerateImageToolProps) => {
-  const toolArgs = props.toolInvocation.args as z.infer<
-    ReturnType<typeof generateImageTool>['parameters']
+  const toolArgs = props.toolInvocation.args as InferToolInput<
+    ReturnType<typeof generateImageTool>
   >;
 
   const result =
     'result' in props.toolInvocation
-      ? (props.toolInvocation.result as Awaited<
-          ReturnType<ReturnType<typeof generateImageTool>['execute']>
+      ? (props.toolInvocation.result as Exclude<
+          InferToolOutput<ReturnType<typeof generateImageTool>>,
+          AsyncIterable<unknown>
         >)
       : null;
 

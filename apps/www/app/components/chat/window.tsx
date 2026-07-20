@@ -21,7 +21,6 @@ export type ChatWindowProps = {
 export const ChatWindow = (props: ChatWindowProps) => {
   const chatStore = useChatStore((s) => ({
     chat: s.chat,
-    modelId: s.modelId,
     setChat: s.setChat,
   }));
   const bibleStore = useBibleStore((s) => ({
@@ -46,7 +45,6 @@ export const ChatWindow = (props: ChatWindowProps) => {
     id: props.id,
     body: {
       additionalContext: props.additionalContext,
-      modelId: chatStore.modelId,
       bibleAbbreviation: bibleStore.bible?.abbreviation,
     },
   });
@@ -130,12 +128,14 @@ export const ChatWindow = (props: ChatWindowProps) => {
       <ChatSidebar />
       <div
         className='relative flex w-full flex-1 flex-col overflow-hidden'
+        role='region'
         aria-label='Chat window'
       >
         <ChatMenu />
         <div
           ref={scrollRef}
           className='flex w-full flex-1 flex-col overflow-y-auto overflow-x-hidden'
+          role='log'
           aria-label='Chat messages'
         >
           <ChatMessageList

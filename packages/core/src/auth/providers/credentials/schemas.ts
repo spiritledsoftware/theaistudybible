@@ -13,7 +13,7 @@ export const newPasswordSchema = z
   .refine((p) => /\d/.test(p), {
     message: 'Password must contain at least one number',
   })
-  .refine((p) => /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+/.test(p), {
+  .refine((p) => /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]+/.test(p), {
     message: 'Password must contain at least one special character',
   });
 

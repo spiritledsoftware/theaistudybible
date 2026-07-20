@@ -3,7 +3,6 @@
   "compilerOptions": {
     "jsx": "react-jsx",
     "lib": ["ESNext", "DOM", "DOM.Iterable"],
-    "baseUrl": "./",
     "paths": {
       "@/email": ["./src"],
       "@/email/*": ["./src/*"],
@@ -15,8 +14,6 @@
       "@/ai/*": ["../ai/src/*"],
       "@/www": ["../../apps/www/src"],
       "@/www/*": ["../../apps/www/src/*"],
-      "@/functions": ["../../apps/functions/src"],
-      "@/functions/*": ["../../apps/functions/src/*"],
       "@/workers": ["../../apps/workers/src"],
       "@/workers/*": ["../../apps/workers/src/*"],
       "@/scripts": ["../../tools/scripts/src"],

@@ -1,0 +1,442 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-07-19T06:12:15-04:00",
+  "title": "Design System: The AI Study Bible",
+  "extensions": {
+    "colorMeta": {
+      "midnight-ink": {
+        "role": "primary",
+        "displayName": "Midnight Ink",
+        "canonical": "#030526",
+        "tonalRamp": [
+          "oklch(15% 0.0688 270.0)",
+          "oklch(27% 0.0688 270.0)",
+          "oklch(39% 0.0688 270.0)",
+          "oklch(51% 0.0688 270.0)",
+          "oklch(63% 0.0688 270.0)",
+          "oklch(75% 0.0688 270.0)",
+          "oklch(87% 0.0688 270.0)",
+          "oklch(95% 0.0688 270.0)"
+        ]
+      },
+      "reading-white": {
+        "role": "neutral",
+        "displayName": "Reading White",
+        "canonical": "#ffffff",
+        "tonalRamp": [
+          "oklch(15% 0 0)",
+          "oklch(27% 0 0)",
+          "oklch(39% 0 0)",
+          "oklch(51% 0 0)",
+          "oklch(63% 0 0)",
+          "oklch(75% 0 0)",
+          "oklch(87% 0 0)",
+          "oklch(95% 0 0)"
+        ]
+      },
+      "reading-ink": {
+        "role": "neutral",
+        "displayName": "Reading Ink",
+        "canonical": "#03030d",
+        "tonalRamp": [
+          "oklch(15% 0.0286 280.4)",
+          "oklch(27% 0.0286 280.4)",
+          "oklch(39% 0.0286 280.4)",
+          "oklch(51% 0.0286 280.4)",
+          "oklch(63% 0.0286 280.4)",
+          "oklch(75% 0.0286 280.4)",
+          "oklch(87% 0.0286 280.4)",
+          "oklch(95% 0.0286 280.4)"
+        ]
+      },
+      "clear-surface": {
+        "role": "neutral",
+        "displayName": "Clear Surface",
+        "canonical": "#fcfcfc",
+        "tonalRamp": [
+          "oklch(15% 0 0)",
+          "oklch(27% 0 0)",
+          "oklch(39% 0 0)",
+          "oklch(51% 0 0)",
+          "oklch(63% 0 0)",
+          "oklch(75% 0 0)",
+          "oklch(87% 0 0)",
+          "oklch(95% 0 0)"
+        ]
+      },
+      "quiet-muted": {
+        "role": "neutral",
+        "displayName": "Quiet Muted",
+        "canonical": "#dbdee1",
+        "tonalRamp": [
+          "oklch(15% 0.0052 247.9)",
+          "oklch(27% 0.0052 247.9)",
+          "oklch(39% 0.0052 247.9)",
+          "oklch(51% 0.0052 247.9)",
+          "oklch(63% 0.0052 247.9)",
+          "oklch(75% 0.0052 247.9)",
+          "oklch(87% 0.0052 247.9)",
+          "oklch(95% 0.0052 247.9)"
+        ]
+      },
+      "quiet-muted-foreground": {
+        "role": "neutral",
+        "displayName": "Quiet Muted Foreground",
+        "canonical": "#53626e",
+        "tonalRamp": [
+          "oklch(15% 0.0267 242.3)",
+          "oklch(27% 0.0267 242.3)",
+          "oklch(39% 0.0267 242.3)",
+          "oklch(51% 0.0267 242.3)",
+          "oklch(63% 0.0267 242.3)",
+          "oklch(75% 0.0267 242.3)",
+          "oklch(87% 0.0267 242.3)",
+          "oklch(95% 0.0267 242.3)"
+        ]
+      },
+      "hairline-border": {
+        "role": "neutral",
+        "displayName": "Hairline Border",
+        "canonical": "#eeeef1",
+        "tonalRamp": [
+          "oklch(15% 0.0040 286.3)",
+          "oklch(27% 0.0040 286.3)",
+          "oklch(39% 0.0040 286.3)",
+          "oklch(51% 0.0040 286.3)",
+          "oklch(63% 0.0040 286.3)",
+          "oklch(75% 0.0040 286.3)",
+          "oklch(87% 0.0040 286.3)",
+          "oklch(95% 0.0040 286.3)"
+        ]
+      },
+      "soft-accent": {
+        "role": "neutral",
+        "displayName": "Soft Accent",
+        "canonical": "#e5e7eb",
+        "tonalRamp": [
+          "oklch(15% 0.0058 264.5)",
+          "oklch(27% 0.0058 264.5)",
+          "oklch(39% 0.0058 264.5)",
+          "oklch(51% 0.0058 264.5)",
+          "oklch(63% 0.0058 264.5)",
+          "oklch(75% 0.0058 264.5)",
+          "oklch(87% 0.0058 264.5)",
+          "oklch(95% 0.0058 264.5)"
+        ]
+      },
+      "insight-cyan": {
+        "role": "secondary",
+        "displayName": "Insight Cyan",
+        "canonical": "#71f2f7",
+        "tonalRamp": [
+          "oklch(15% 0.1141 198.8)",
+          "oklch(27% 0.1141 198.8)",
+          "oklch(39% 0.1141 198.8)",
+          "oklch(51% 0.1141 198.8)",
+          "oklch(63% 0.1141 198.8)",
+          "oklch(75% 0.1141 198.8)",
+          "oklch(87% 0.1141 198.8)",
+          "oklch(95% 0.1141 198.8)"
+        ]
+      },
+      "annotation-magenta": {
+        "role": "tertiary",
+        "displayName": "Annotation Magenta",
+        "canonical": "#ea46dc",
+        "tonalRamp": [
+          "oklch(15% 0.2525 331.7)",
+          "oklch(27% 0.2525 331.7)",
+          "oklch(39% 0.2525 331.7)",
+          "oklch(51% 0.2525 331.7)",
+          "oklch(63% 0.2525 331.7)",
+          "oklch(75% 0.2525 331.7)",
+          "oklch(87% 0.2525 331.7)",
+          "oklch(95% 0.2525 331.7)"
+        ]
+      },
+      "destructive": {
+        "role": "neutral",
+        "displayName": "Destructive",
+        "canonical": "#ff2828",
+        "tonalRamp": [
+          "oklch(15% 0.2441 27.7)",
+          "oklch(27% 0.2441 27.7)",
+          "oklch(39% 0.2441 27.7)",
+          "oklch(51% 0.2441 27.7)",
+          "oklch(63% 0.2441 27.7)",
+          "oklch(75% 0.2441 27.7)",
+          "oklch(87% 0.2441 27.7)",
+          "oklch(95% 0.2441 27.7)"
+        ]
+      },
+      "night-surface": {
+        "role": "neutral",
+        "displayName": "Night Surface",
+        "canonical": "#000000",
+        "tonalRamp": [
+          "oklch(15% 0 0)",
+          "oklch(27% 0 0)",
+          "oklch(39% 0 0)",
+          "oklch(51% 0 0)",
+          "oklch(63% 0 0)",
+          "oklch(75% 0 0)",
+          "oklch(87% 0 0)",
+          "oklch(95% 0 0)"
+        ]
+      },
+      "night-panel": {
+        "role": "neutral",
+        "displayName": "Night Panel",
+        "canonical": "#030303",
+        "tonalRamp": [
+          "oklch(15% 0 0)",
+          "oklch(27% 0 0)",
+          "oklch(39% 0 0)",
+          "oklch(51% 0 0)",
+          "oklch(63% 0 0)",
+          "oklch(75% 0 0)",
+          "oklch(87% 0 0)",
+          "oklch(95% 0 0)"
+        ]
+      },
+      "night-foreground": {
+        "role": "neutral",
+        "displayName": "Night Foreground",
+        "canonical": "#fcfcfd",
+        "tonalRamp": [
+          "oklch(15% 0.0013 286.4)",
+          "oklch(27% 0.0013 286.4)",
+          "oklch(39% 0.0013 286.4)",
+          "oklch(51% 0.0013 286.4)",
+          "oklch(63% 0.0013 286.4)",
+          "oklch(75% 0.0013 286.4)",
+          "oklch(87% 0.0013 286.4)",
+          "oklch(95% 0.0013 286.4)"
+        ]
+      },
+      "night-muted": {
+        "role": "neutral",
+        "displayName": "Night Muted",
+        "canonical": "#1e2124",
+        "tonalRamp": [
+          "oklch(15% 0.0072 248.1)",
+          "oklch(27% 0.0072 248.1)",
+          "oklch(39% 0.0072 248.1)",
+          "oklch(51% 0.0072 248.1)",
+          "oklch(63% 0.0072 248.1)",
+          "oklch(75% 0.0072 248.1)",
+          "oklch(87% 0.0072 248.1)",
+          "oklch(95% 0.0072 248.1)"
+        ]
+      },
+      "night-muted-foreground": {
+        "role": "neutral",
+        "displayName": "Night Muted Foreground",
+        "canonical": "#919fac",
+        "tonalRamp": [
+          "oklch(15% 0.0249 246.2)",
+          "oklch(27% 0.0249 246.2)",
+          "oklch(39% 0.0249 246.2)",
+          "oklch(51% 0.0249 246.2)",
+          "oklch(63% 0.0249 246.2)",
+          "oklch(75% 0.0249 246.2)",
+          "oklch(87% 0.0249 246.2)",
+          "oklch(95% 0.0249 246.2)"
+        ]
+      },
+      "night-border": {
+        "role": "neutral",
+        "displayName": "Night Border",
+        "canonical": "#17171c",
+        "tonalRamp": [
+          "oklch(15% 0.0098 285.5)",
+          "oklch(27% 0.0098 285.5)",
+          "oklch(39% 0.0098 285.5)",
+          "oklch(51% 0.0098 285.5)",
+          "oklch(63% 0.0098 285.5)",
+          "oklch(75% 0.0098 285.5)",
+          "oklch(87% 0.0098 285.5)",
+          "oklch(95% 0.0098 285.5)"
+        ]
+      },
+      "night-primary": {
+        "role": "neutral",
+        "displayName": "Night Primary",
+        "canonical": "#181927",
+        "tonalRamp": [
+          "oklch(15% 0.0274 280.7)",
+          "oklch(27% 0.0274 280.7)",
+          "oklch(39% 0.0274 280.7)",
+          "oklch(51% 0.0274 280.7)",
+          "oklch(63% 0.0274 280.7)",
+          "oklch(75% 0.0274 280.7)",
+          "oklch(87% 0.0274 280.7)",
+          "oklch(95% 0.0274 280.7)"
+        ]
+      },
+      "night-primary-foreground": {
+        "role": "neutral",
+        "displayName": "Night Primary Foreground",
+        "canonical": "#eaebff",
+        "tonalRamp": [
+          "oklch(15% 0.0269 283.6)",
+          "oklch(27% 0.0269 283.6)",
+          "oklch(39% 0.0269 283.6)",
+          "oklch(51% 0.0269 283.6)",
+          "oklch(63% 0.0269 283.6)",
+          "oklch(75% 0.0269 283.6)",
+          "oklch(87% 0.0269 283.6)",
+          "oklch(95% 0.0269 283.6)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Rare route-level and public-facing headings only."
+      },
+      "headline": { "displayName": "Headline", "purpose": "Major product section headings." },
+      "title": { "displayName": "Title", "purpose": "Panel and content-group titles." },
+      "body": { "displayName": "Body", "purpose": "Reading support, explanations, and prose." },
+      "label": { "displayName": "Label", "purpose": "Controls, navigation, fields, and metadata." }
+    },
+    "shadows": [
+      {
+        "name": "control-lift",
+        "value": "var(--shadow-xs)",
+        "purpose": "Existing compact control lift; use only for transient interaction feedback in new work."
+      },
+      {
+        "name": "panel-lift",
+        "value": "var(--shadow-sm)",
+        "purpose": "Floating menus, popovers, and compact transient panels."
+      }
+    ],
+    "motion": [
+      {
+        "name": "state-standard",
+        "value": "200ms cubic-bezier(0.16, 1, 0.3, 1)",
+        "purpose": "Hover, focus, selection, and compact reveal transitions."
+      },
+      {
+        "name": "accordion",
+        "value": "200ms ease-out",
+        "purpose": "Accordion height transitions."
+      },
+      {
+        "name": "header-reveal",
+        "value": "300ms ease-in-out",
+        "purpose": "Sticky header hide and return behavior."
+      }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px" },
+      { "name": "lg", "value": "1024px" },
+      { "name": "xl", "value": "1280px" },
+      { "name": "2xl-container", "value": "1400px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The dominant local action, compact and direct.",
+      "html": "<button class=\"ds-btn-primary\">Continue</button>",
+      "css": ".ds-btn-primary { display:inline-flex; align-items:center; justify-content:center; gap:8px; height:36px; padding:8px 16px; border:0; border-radius:calc(var(--radius) - 2px); background:hsl(var(--primary)); color:hsl(var(--primary-foreground)); font:500 14px/1.25 'Inter Variable',Inter,sans-serif; transition:background-color 200ms cubic-bezier(.16,1,.3,1),box-shadow 200ms cubic-bezier(.16,1,.3,1); } .ds-btn-primary:hover { background:hsl(var(--primary)/.9); } .ds-btn-primary:focus-visible { outline:none; box-shadow:0 0 0 3px hsl(var(--ring)/.5); } .ds-btn-primary:active { background:hsl(var(--primary)/.82); } .ds-btn-primary:disabled { pointer-events:none; opacity:.5; }"
+    },
+    {
+      "name": "Outline Button",
+      "kind": "button",
+      "refersTo": "button-outline",
+      "description": "A secondary action with an explicit but quiet boundary.",
+      "html": "<button class=\"ds-btn-outline\">Read now</button>",
+      "css": ".ds-btn-outline { display:inline-flex; align-items:center; justify-content:center; gap:8px; height:36px; padding:8px 16px; border:1px solid hsl(var(--border)); border-radius:calc(var(--radius) - 2px); background:hsl(var(--background)); color:hsl(var(--foreground)); font:500 14px/1.25 'Inter Variable',Inter,sans-serif; transition:background-color 200ms cubic-bezier(.16,1,.3,1),border-color 200ms cubic-bezier(.16,1,.3,1),box-shadow 200ms cubic-bezier(.16,1,.3,1); } .ds-btn-outline:hover { background:hsl(var(--accent)); color:hsl(var(--accent-foreground)); } .ds-btn-outline:focus-visible { outline:none; border-color:hsl(var(--ring)); box-shadow:0 0 0 3px hsl(var(--ring)/.5); } .ds-btn-outline:active { background:hsl(var(--accent)/.8); }"
+    },
+    {
+      "name": "Ghost Button",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "A low-emphasis utility action that appears on interaction.",
+      "html": "<button class=\"ds-btn-ghost\">Options</button>",
+      "css": ".ds-btn-ghost { display:inline-flex; align-items:center; justify-content:center; height:36px; padding:8px 16px; border:0; border-radius:calc(var(--radius) - 2px); background:transparent; color:hsl(var(--foreground)); font:500 14px/1.25 'Inter Variable',Inter,sans-serif; transition:background-color 200ms cubic-bezier(.16,1,.3,1),box-shadow 200ms cubic-bezier(.16,1,.3,1); } .ds-btn-ghost:hover { background:hsl(var(--accent)); color:hsl(var(--accent-foreground)); } .ds-btn-ghost:focus-visible { outline:none; box-shadow:0 0 0 3px hsl(var(--ring)/.5); } .ds-btn-ghost:active { background:hsl(var(--accent)/.8); }"
+    },
+    {
+      "name": "Text Input",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "A compact field with a clear keyboard focus state.",
+      "html": "<input class=\"ds-input\" placeholder=\"Search Scripture\" />",
+      "css": ".ds-input { width:100%; min-width:0; height:36px; padding:4px 12px; border:1px solid hsl(var(--input)); border-radius:calc(var(--radius) - 2px); background:transparent; color:hsl(var(--foreground)); font:400 14px/1.25 'Inter Variable',Inter,sans-serif; transition:border-color 200ms cubic-bezier(.16,1,.3,1),box-shadow 200ms cubic-bezier(.16,1,.3,1); } .ds-input::placeholder { color:hsl(var(--muted-foreground)); opacity:1; } .ds-input:hover { border-color:hsl(var(--foreground)/.28); } .ds-input:focus-visible { outline:none; border-color:hsl(var(--ring)); box-shadow:0 0 0 3px hsl(var(--ring)/.5); } .ds-input:disabled { cursor:not-allowed; opacity:.5; }"
+    },
+    {
+      "name": "Study Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "A bounded supporting surface for study tools, not a default page scaffold.",
+      "html": "<section class=\"ds-card\"><h3>Related passage</h3><p>Study context stays close to the Scripture it supports.</p></section>",
+      "css": ".ds-card { display:flex; flex-direction:column; gap:24px; padding:24px; border:1px solid hsl(var(--border)); border-radius:calc(var(--radius) + 4px); background:hsl(var(--card)); color:hsl(var(--card-foreground)); font:400 16px/1.75 'Inter Variable',Inter,sans-serif; } .ds-card h3 { margin:0; color:hsl(var(--card-foreground)); font:600 20px/1.25 'Inter Variable',Inter,sans-serif; } .ds-card p { margin:0; max-width:70ch; color:hsl(var(--muted-foreground)); } .ds-card:focus-within { border-color:hsl(var(--ring)); box-shadow:0 0 0 3px hsl(var(--ring)/.35); }"
+    },
+    {
+      "name": "Navigation Bar",
+      "kind": "nav",
+      "description": "A restrained sticky header whose controls recede around the reading task.",
+      "html": "<nav class=\"ds-nav\"><strong>The AI Study Bible</strong><a href=\"#read\" aria-current=\"page\">Read</a><a href=\"#study\">Study</a></nav>",
+      "css": ".ds-nav { display:flex; align-items:center; gap:24px; min-height:72px; padding:4px 16px; border-bottom:1px solid hsl(var(--border)); background:hsl(var(--background)/.8); color:hsl(var(--foreground)); font:500 14px/1.25 'Inter Variable',Inter,sans-serif; } .ds-nav strong { margin-right:auto; color:hsl(var(--foreground)); font-weight:600; } .ds-nav a { border-radius:calc(var(--radius) - 2px); padding:8px 10px; color:hsl(var(--muted-foreground)); text-decoration:none; transition:background-color 200ms cubic-bezier(.16,1,.3,1),color 200ms cubic-bezier(.16,1,.3,1),box-shadow 200ms cubic-bezier(.16,1,.3,1); } .ds-nav a:hover { background:hsl(var(--accent)); color:hsl(var(--foreground)); } .ds-nav a[aria-current='page'] { color:hsl(var(--foreground)); } .ds-nav a:focus-visible { outline:none; box-shadow:0 0 0 3px hsl(var(--ring)/.5); }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Illuminated Margin",
+    "overview": "The interface behaves like a quiet margin beside Scripture: present when a reader reaches for context, otherwise visually recessive. It is quiet, focused, and unhurried, with familiar controls and measured density that protect long-form reading. The system is refined and restrained rather than ornamental. Midnight Ink anchors actions and structure; Insight Cyan and Annotation Magenta are scarce semantic signals, never ambient decoration. The product must not feel like a flashy AI demo: glows, gradients, constant motion, and AI theatrics are prohibited when they compete with Scripture.",
+    "keyCharacteristics": [
+      "Scripture owns the largest, calmest surface.",
+      "Study tools appear progressively and remain close to the passage they explain.",
+      "Controls use familiar shapes, compact radii, and explicit focus states.",
+      "Light and dark themes preserve hierarchy rather than changing personality.",
+      "Motion communicates state within 150–250 ms; it never stages the page."
+    ],
+    "rules": [
+      {
+        "name": "The Scarce Signal Rule",
+        "body": "Insight Cyan and Annotation Magenta together occupy no more than 10% of a product screen; they identify state or meaning, never atmosphere.",
+        "section": "colors"
+      },
+      {
+        "name": "The Reading Field Rule",
+        "body": "Scripture sits on the quietest available neutral. Never place long-form passage text over a gradient, glow, image, or translucent surface.",
+        "section": "colors"
+      },
+      {
+        "name": "The One Reading Voice Rule",
+        "body": "Inter carries every task-oriented surface. Goldman is forbidden in buttons, form labels, navigation labels, tables, and dense study controls.",
+        "section": "typography"
+      },
+      {
+        "name": "The Adjustable Text Rule",
+        "body": "User-selected Scripture size changes content typography without scaling surrounding controls or destabilizing layout.",
+        "section": "typography"
+      },
+      {
+        "name": "The Flat-at-Rest Rule",
+        "body": "Static cards, fields, and buttons do not combine a border with a persistent shadow. Choose tonal separation or a border; elevation appears only when behavior requires it.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do keep Scripture on Reading White or Night Surface with WCAG 2.2 AA contrast.",
+      "Do use Midnight Ink for the dominant local action and reserve saturated accents for semantic state.",
+      "Do keep task controls in Inter at 0.875rem–1rem with visible keyboard focus.",
+      "Do expose deeper study tools progressively beside the passage that gives them context.",
+      "Do preserve scalable Scripture type, comfortable line length, spacing, and theme controls."
+    ],
+    "donts": [
+      "Don't make the product feel like a flashy AI demo; glows, gradients, constant motion, and AI theatrics that compete with Scripture are prohibited.",
+      "Don't use gradient text, animated gradient buttons, pulsing decoration, bouncing controls, or orchestrated page-load sequences.",
+      "Don't combine a one-pixel border with a persistent wide shadow on the same static element.",
+      "Don't use Goldman for navigation, form labels, buttons, data, or repeated product headings.",
+      "Don't rely on Insight Cyan or Annotation Magenta as decoration or as the only carrier of meaning.",
+      "Don't hide common reading and navigation actions behind unfamiliar custom affordances."
+    ]
+  }
+}

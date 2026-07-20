@@ -70,6 +70,7 @@ const FileInput = React.forwardRef<HTMLDivElement, FileInputProps>(
 
     return (
       <FileInputContext.Provider value={{ files, setFiles, isDragging }}>
+        {/* biome-ignore lint/a11y/noStaticElementInteractions: Drag events supplement the keyboard-accessible file input */}
         <div
           className={cn('relative flex flex-col gap-2', className)}
           onDragEnter={handleDragEnter}

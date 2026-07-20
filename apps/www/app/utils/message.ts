@@ -16,16 +16,3 @@ export function getMessageIdFromAnnotations(message: Pick<Message, 'annotations'
     ) as { dbId: string } | undefined
   )?.dbId;
 }
-
-export function getModelIdFromAnnotations(message: Pick<Message, 'annotations'>) {
-  return (
-    message.annotations?.find(
-      (a) =>
-        typeof a === 'object' &&
-        a !== null &&
-        !Array.isArray(a) &&
-        'modelId' in a &&
-        typeof a.modelId === 'string',
-    ) as { modelId: string } | undefined
-  )?.modelId;
-}

@@ -1,3 +1,4 @@
+import { vectorStore } from '@/ai/vector-store';
 import { db } from '@/core/database';
 import { dataSources } from '@/core/database/schema';
 import { UpdateDataSourceSchema } from '@/schemas/data-sources';
@@ -25,18 +26,65 @@ import { Input } from '../../ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../ui/select';
 import { Textarea } from '../../ui/textarea';
 
+const EditableDataSourceSchema = UpdateDataSourceSchema.omit({
+  approvalStatus: true,
+  approvedAt: true,
+  approvedBy: true,
+  numberOfDocuments: true,
+});
+
 const editDataSource = createServerFn({ method: 'POST' })
   .middleware([requireAdminMiddleware])
   .validator(
     z.object({
       id: z.string(),
-      data: UpdateDataSourceSchema,
+      data: EditableDataSourceSchema,
     }),
   )
   .handler(async ({ data }) => {
+    const existing = await db.query.dataSources.findFirst({
+      where: (table, { eq: equals }) => equals(table.id, data.id),
+    });
+    if (!existing) return { dataSource: null };
+
+    const requiresReapproval =
+      (data.data.url !== undefined && data.data.url !== existing.url) ||
+      (data.data.type !== undefined && data.data.type !== existing.type) ||
+      (data.data.version !== undefined && data.data.version !== existing.version) ||
+      (data.data.checksum !== undefined && data.data.checksum !== existing.checksum) ||
+      (data.data.rightsBasis !== undefined && data.data.rightsBasis !== existing.rightsBasis) ||
+      (data.data.attribution !== undefined && data.data.attribution !== existing.attribution) ||
+      (data.data.metadata !== undefined &&
+        JSON.stringify(data.data.metadata) !== JSON.stringify(existing.metadata)) ||
+      (data.data.traditionClassification !== undefined &&
+        JSON.stringify(data.data.traditionClassification) !==
+          JSON.stringify(existing.traditionClassification));
+
+    if (requiresReapproval) {
+      const indexedDocuments = await db.query.dataSourcesToSourceDocuments.findMany({
+        where: (table, { eq: equals }) => equals(table.dataSourceId, data.id),
+        columns: { sourceDocumentId: true },
+      });
+      if (indexedDocuments.length > 0) {
+        await vectorStore.deleteDocuments(
+          indexedDocuments.map(({ sourceDocumentId }) => sourceDocumentId),
+        );
+      }
+    }
+
     const [dataSource] = await db
       .update(dataSources)
-      .set(data.data)
+      .set(
+        requiresReapproval
+          ? {
+              ...data.data,
+              approvalStatus: 'PENDING',
+              approvedAt: null,
+              approvedBy: null,
+              numberOfDocuments: 0,
+            }
+          : data.data,
+      )
       .where(eq(dataSources.id, data.id))
       .returning();
     return { dataSource };

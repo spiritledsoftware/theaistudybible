@@ -1,15 +1,22 @@
 import { db } from '@/core/database';
 import * as schema from '@/core/database/schema';
 import { buildConflictUpdateColumns } from '@/core/database/utils';
-import { s3 } from '@/core/storage';
-import type { IndexChapterEvent } from '@/functions/queues/subscribers/bibles/index-chapter/types';
-import { PutObjectCommand } from '@aws-sdk/client-s3';
+import { env } from '@/core/env';
 import { eq, sql } from 'drizzle-orm';
 import { XMLBuilder, XMLParser } from 'fast-xml-parser';
 import JSZip from 'jszip';
-import { Resource } from 'sst';
 import type { DBLMetadata, Publication } from './types';
 import { parseUsx } from './usx';
+export type IndexChapterEvent = {
+  bibleAbbreviation: string;
+  bookCode: string;
+  previousCode: string | undefined;
+  nextCode: string | undefined;
+  chapterNumber: string;
+  content: ReturnType<typeof parseUsx>[number];
+  generateEmbeddings: boolean;
+  overwrite: boolean;
+};
 
 type CreateBibleParams = {
   zipBuffer: Uint8Array;
@@ -372,23 +379,10 @@ async function sendChaptersToIndexBucket(
       } satisfies IndexChapterEvent;
     });
 
-    const uploadPromises = messages.map((message) =>
-      s3.send(
-        new PutObjectCommand({
-          Bucket: Resource.ChapterMessageBucket.name,
-          Key: `${message.bibleAbbreviation}.${message.bookCode}.${message.chapterNumber}.json`,
-          Body: JSON.stringify(message),
-          ContentType: 'application/json',
-        }),
-      ),
+    await env.BIBLE_IMPORT_QUEUE.sendBatch(
+      messages.map((message) => ({
+        body: { type: 'chapter' as const, ...message },
+      })),
     );
-
-    const responses = await Promise.all(uploadPromises);
-
-    for (const response of responses) {
-      if (response.$metadata.httpStatusCode !== 200) {
-        throw new Error('Failed to send message to index queue');
-      }
-    }
   }
 }

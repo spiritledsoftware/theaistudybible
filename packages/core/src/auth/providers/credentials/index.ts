@@ -90,7 +90,7 @@ export async function requestPasswordReset(values: z.infer<typeof forgotPassword
     })
     .returning();
 
-  const result = await queueEmail({
+  await queueEmail({
     subject: 'Password Reset',
     to: [user.email],
     body: {
@@ -98,9 +98,6 @@ export async function requestPasswordReset(values: z.infer<typeof forgotPassword
       code: code.code,
     },
   });
-  if (result.$metadata.httpStatusCode !== 200) {
-    throw new Error('Failed to queue email');
-  }
 
   return code;
 }

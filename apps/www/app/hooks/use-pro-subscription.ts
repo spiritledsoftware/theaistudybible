@@ -11,13 +11,11 @@ export type UseSubscriptionReturn = {
   | {
       isActive: false;
       isPro: false;
-      isMinistry: false;
       subscription: { status: 'none' } | null | undefined;
     }
   | {
       isActive: true;
       isPro: boolean;
-      isMinistry: boolean;
       subscription: ActiveSubscription;
     }
 );
@@ -36,7 +34,6 @@ export const useSubscription = (): UseSubscriptionReturn => {
       [data?.subscription?.status],
     ),
     isPro: useMemo(() => data?.type === 'pro', [data?.type]),
-    isMinistry: useMemo(() => data?.type === 'ministry', [data?.type]),
     subscription: useMemo(() => data?.subscription, [data?.subscription]),
     refetch,
   } as UseSubscriptionReturn;

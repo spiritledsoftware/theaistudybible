@@ -1,3 +1,4 @@
+import { env } from '@/core/env';
 import { lucia } from '@/core/auth';
 import {
   createWebAuthnChallenge,
@@ -31,7 +32,6 @@ import { createServerFn } from '@tanstack/react-start';
 import { KeyIcon } from 'lucide-react';
 import type { ComponentProps } from 'react';
 import { toast } from 'sonner';
-import { Resource } from 'sst';
 import { z } from 'zod';
 import { Button } from '../../ui/button';
 
@@ -57,7 +57,7 @@ const signInWithPasskey = createServerFn({ method: 'POST' })
     const clientDataJSONBytes = decodeBase64(data.clientDataJSON);
 
     const authenticatorData = parseAuthenticatorData(authenticatorDataBytes);
-    if (!authenticatorData.verifyRelyingPartyIdHash(new URL(Resource.WebAppUrl.value).hostname)) {
+    if (!authenticatorData.verifyRelyingPartyIdHash(new URL(env.WEB_APP_URL).hostname)) {
       throw new Error('Invalid relying party ID hash');
     }
     if (!authenticatorData.userPresent || !authenticatorData.userVerified) {
@@ -68,7 +68,7 @@ const signInWithPasskey = createServerFn({ method: 'POST' })
     if (!(await verifyWebAuthnChallenge(clientData.challenge))) {
       throw new Error('Invalid challenge');
     }
-    if (clientData.origin !== Resource.WebAppUrl.value) {
+    if (clientData.origin !== env.WEB_APP_URL) {
       throw new Error('Invalid origin');
     }
     if (clientData.crossOrigin !== null && clientData.crossOrigin) {

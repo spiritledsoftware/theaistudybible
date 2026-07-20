@@ -264,6 +264,8 @@ export const BibleReaderProvider = (props: BibleReaderProviderProps) => {
   );
 };
 
+const selectBibleReaderStore = (state: BibleReaderStore) => state;
+
 export const useBibleReaderStore = <T = BibleReaderStore>(
   selector?: (state: BibleReaderStore) => T,
 ): T => {
@@ -272,9 +274,8 @@ export const useBibleReaderStore = <T = BibleReaderStore>(
     throw new Error('useBibleReaderStore must be used within BibleReaderProvider');
   }
 
-  if (!selector) {
-    return useStore(bibleReaderStoreContext) as T;
-  }
-
-  return useStore(bibleReaderStoreContext, useShallow(selector));
+  return useStore(
+    bibleReaderStoreContext,
+    useShallow(selector ?? (selectBibleReaderStore as (state: BibleReaderStore) => T)),
+  );
 };

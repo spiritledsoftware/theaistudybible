@@ -33,7 +33,6 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '../../ui/tooltip';
 import { H3, H6 } from '../../ui/typography';
 import { DeleteChatButton } from './delete-chat-button';
 
-// @ts-ignore
 const getChats = createServerFn({ method: 'GET' })
   .middleware([requireAuthMiddleware])
   .validator(
@@ -75,7 +74,6 @@ export const getChatsQueryOptions = (searchQuery?: string) => ({
   queryFn: ({ pageParam }: { pageParam: number }) =>
     getChats({ data: { offset: pageParam, limit: 15, searchQuery } }),
   initialPageParam: 0,
-  // @ts-ignore
   getNextPageParam: (lastPage: Awaited<ReturnType<typeof getChats>>) => lastPage.nextCursor,
 });
 

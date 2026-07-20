@@ -1,8 +1,7 @@
 import { toCapitalizedCase } from '@/core/utils/string';
-import type { Message } from '@/schemas/chats/messages/types';
 
 export const messagesToString = (
-  messages: Pick<Message, 'role' | 'content' | 'toolInvocations'>[],
+  messages: { content: string; role: string; toolInvocations?: unknown[] | null }[],
 ) => {
   return messages
     .map(

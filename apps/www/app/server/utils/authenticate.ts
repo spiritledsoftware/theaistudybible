@@ -1,3 +1,4 @@
+import { isChristianTraditionApproved } from '@/core/christian-tradition-approvals';
 import { lucia } from '@/core/auth';
 import { db } from '@/core/database';
 import { userSettings } from '@/core/database/schema';
@@ -37,5 +38,11 @@ export const getUserRolesAndSettings = async (userId: string) => {
       .then((userRoles) => userRoles.map((role) => role.role)),
   ]);
 
+  if (
+    settings?.christianTradition &&
+    !(await isChristianTraditionApproved(settings.christianTradition))
+  ) {
+    return { settings: { ...settings, christianTradition: null }, roles };
+  }
   return { settings, roles };
 };

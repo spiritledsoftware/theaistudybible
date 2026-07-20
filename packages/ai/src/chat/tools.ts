@@ -1,34 +1,33 @@
-import { cache } from '@/core/cache';
 import { db } from '@/core/database';
 import { chapterBookmarks, userGeneratedImages, verseHighlights } from '@/core/database/schema';
-import { s3 } from '@/core/storage';
-import { getStripeData, isMinistry, isPro } from '@/core/stripe/utils';
+import { env } from '@/core/env';
+import { getQuotaLedgerName } from '@/core/quotas/keys';
+import { getPublicMediaBucket, getPublicMediaUrl } from '@/core/storage';
+import { getStripeData, isPro } from '@/core/stripe/utils';
 import { createId } from '@/core/utils/id';
+import { getConfiguredDailyQuota } from '@/core/utils/quota';
 import type { Role } from '@/schemas/roles/types';
 import type { User } from '@/schemas/users/types';
-import { PutObjectCommand } from '@aws-sdk/client-s3';
-import { Ratelimit } from '@upstash/ratelimit';
-import { type DataStreamWriter, tool } from 'ai';
-import { experimental_generateImage as generateImage } from 'ai';
+import { generateImage, tool } from 'ai';
 import { formatDate } from 'date-fns';
-import { Resource } from 'sst';
 import { z } from 'zod';
-import { openai } from '../provider-registry';
-import { vectorStore } from '../vector-store';
+import { getImageModel } from '../models';
+import { protectRetrievedEvidence } from '../retrieved-evidence';
+import { vectorStore, type SearchDocumentsOptions } from '../vector-store';
 
-export const askForHighlightColorTool = (_input: { dataStream: DataStreamWriter }) =>
+export const askForHighlightColorTool = () =>
   tool({
     description: 'Ask for Highlight Color: Ask which color to use when highlighting a verse.',
-    parameters: z.object({
+    inputSchema: z.object({
       message: z.string().describe('A polite message to ask the user for a highlight color.'),
     }),
   });
 
-export const highlightVerseTool = (input: { dataStream: DataStreamWriter; userId: string }) =>
+export const highlightVerseTool = (input: { userId: string }) =>
   tool({
     description:
       'Highlight Verse: Highlight a verse in the Bible. You must always ask the user for the highlight color using the "Ask for Highlight Color" tool before using this tool.',
-    parameters: z.object({
+    inputSchema: z.object({
       bibleAbbreviation: z.string().describe('The abbreviation of the Bible the verse is from.'),
       bookCode: z
         .string()
@@ -113,10 +112,10 @@ export const highlightVerseTool = (input: { dataStream: DataStreamWriter; userId
     },
   });
 
-export const bookmarkChapterTool = (input: { dataStream: DataStreamWriter; userId: string }) =>
+export const bookmarkChapterTool = (input: { userId: string }) =>
   tool({
     description: 'Bookmark Chapter: Bookmark a chapter in the Bible.',
-    parameters: z.object({
+    inputSchema: z.object({
       bibleAbbreviation: z.string().describe('The abbreviation of the Bible the verse is from.'),
       bookCode: z
         .string()
@@ -184,13 +183,28 @@ export const bookmarkChapterTool = (input: { dataStream: DataStreamWriter; userI
     },
   });
 
+function matchesChristianTradition(
+  metadata: Record<string, unknown> | undefined,
+  christianTradition: string,
+) {
+  const type = metadata?.type;
+  if (type === 'bible' || type === 'BIBLE') return true;
+  const value = metadata?.traditionClassification;
+  if (typeof value !== 'string') return false;
+  const traditions = value.split(',').map((tradition) => tradition.trim());
+  return (
+    traditions.includes('BROAD_CHRISTIAN') ||
+    (christianTradition !== 'BROAD_CHRISTIAN' && traditions.includes(christianTradition))
+  );
+}
+
 export const vectorStoreTool = (input: {
-  dataStream: DataStreamWriter;
   bibleAbbreviation?: string | null;
+  christianTradition?: string | null;
 }) =>
   tool({
-    description: 'Vector Store: Fetch relevant resources for your answer.',
-    parameters: z.object({
+    description: 'Scripture and Source Search: Fetch approved evidence for your answer.',
+    inputSchema: z.object({
       terms: z
         .array(
           z.object({
@@ -224,11 +238,20 @@ export const vectorStoreTool = (input: {
         // Get initial results from vector search
         const docs = await Promise.all(
           terms.map(async ({ term, weight, category }) => {
-            let filter = `bibleAbbreviation = "${input.bibleAbbreviation}" or (type != "bible" and type != "BIBLE")`;
+            const bibleFilter: VectorizeVectorMetadataFilter = {
+              type: { $in: ['bible', 'BIBLE'] },
+            };
+            if (input.bibleAbbreviation) {
+              bibleFilter.bibleAbbreviation = input.bibleAbbreviation;
+            }
+            let filter: SearchDocumentsOptions['filter'] = [
+              bibleFilter,
+              { type: { $nin: ['bible', 'BIBLE'] }, approvalStatus: 'APPROVED' },
+            ];
             if (category === 'bible') {
-              filter = `(type = "bible" or type = "BIBLE") and bibleAbbreviation = "${input.bibleAbbreviation}"`;
+              filter = bibleFilter;
             } else if (category === 'theology') {
-              filter = 'category = "theology"';
+              filter = { category: 'theology', approvalStatus: 'APPROVED' };
             }
             return await vectorStore
               .searchDocuments(term, {
@@ -238,10 +261,17 @@ export const vectorStoreTool = (input: {
                 filter,
               })
               .then((docs) =>
-                docs.map((doc) => ({
-                  ...doc,
-                  score: doc.score * weight,
-                })),
+                docs
+                  .filter((doc) =>
+                    matchesChristianTradition(
+                      doc.metadata,
+                      input.christianTradition ?? 'BROAD_CHRISTIAN',
+                    ),
+                  )
+                  .map((doc) => ({
+                    ...doc,
+                    score: doc.score * weight,
+                  })),
               );
           }),
         ).then((docs) =>
@@ -253,10 +283,10 @@ export const vectorStoreTool = (input: {
 
         return {
           status: 'success',
-          documents: docs.slice(0, 12),
+          documents: docs.slice(0, 12).map(protectRetrievedEvidence),
         } as const;
       } catch (err) {
-        console.error('Error fetching vector store', err);
+        console.error('Error fetching scripture and source evidence', err);
         return {
           status: 'error',
           message: err instanceof Error ? err.message : 'An unknown error occurred',
@@ -266,21 +296,20 @@ export const vectorStoreTool = (input: {
   });
 
 export const generateImageTool = (input: {
-  dataStream: DataStreamWriter;
   userId: string;
   user?: User | null;
   roles?: Role[] | null;
 }) =>
   tool({
     description:
-      'Generate Image: Generate an image from a text prompt. You must use the "Vector Store" tool to fetch relevant resources to make your prompt more detailed.',
-    parameters: z.object({
+      'Generate Image: Generate an image from a text prompt. You must use the "Scripture and Source Search" tool to ground the prompt in approved evidence.',
+    inputSchema: z.object({
       prompt: z
         .string()
         .min(1)
         .max(1000)
         .describe(
-          'The text prompt that will be used to generate the image. This prompt must be detailed enough to make it accurate according to the vector store search results.',
+          'The image prompt must accurately reflect the approved scripture and source evidence returned by search.',
         ),
       size: z
         .enum(['1024x1024', '1792x1024', '1024x1792'])
@@ -289,86 +318,66 @@ export const generateImageTool = (input: {
         .describe('The size of the generated image. More detailed images need a larger size.'),
     }),
     execute: async ({ prompt, size }, { abortSignal }) => {
-      const rlPrefix = 'image-generation';
-      let ratelimit = new Ratelimit({
-        prefix: rlPrefix,
-        redis: cache,
-        limiter: Ratelimit.slidingWindow(2, '24h'),
-      });
-      if (input.user) {
-        const subData = await getStripeData(input.user.stripeCustomerId);
-        if (isPro(subData)) {
-          ratelimit = new Ratelimit({
-            prefix: rlPrefix,
-            redis: cache,
-            limiter: Ratelimit.slidingWindow(10, '24h'),
-          });
-        } else if (isMinistry(subData) || input.roles?.some((role) => role.id === 'admin')) {
-          ratelimit = new Ratelimit({
-            prefix: rlPrefix,
-            redis: cache,
-            limiter: Ratelimit.slidingWindow(100, '24h'),
-          });
+      const subscription = input.user
+        ? await getStripeData(input.user.stripeCustomerId)
+        : { status: 'none' as const };
+      const isAdmin = input.roles?.some((role) => role.id === 'admin') ?? false;
+      const limit = isAdmin
+        ? null
+        : getConfiguredDailyQuota(
+            isPro(subscription) ? 'PRO_IMAGE_DAILY_LIMIT' : 'FREE_IMAGE_DAILY_LIMIT',
+          );
+      const limiter = env.QUOTA_LIMITER.getByName(getQuotaLedgerName('image', input.userId));
+      const reservationId = createId();
+      if (limit !== null) {
+        const reservation = await limiter.reserve({
+          id: reservationId,
+          limit,
+          windowMs: 86_400_000,
+        });
+        if (!reservation.allowed) {
+          return {
+            status: 'error',
+            message: `You have exceeded your daily image generation limit. Please upgrade or try again at ${formatDate(reservation.resetAt, 'M/d/yy h:mm a')}.`,
+          } as const;
         }
-      }
-
-      const ratelimitResult = await ratelimit.limit(input.userId);
-      if (!ratelimitResult.success) {
-        return {
-          status: 'error',
-          message: `You have exceeded your daily image generation limit. Please upgrade or try again at ${formatDate(ratelimitResult.reset, 'M/d/yy h:mm a')}.`,
-        } as const;
       }
 
       try {
         const { image } = await generateImage({
           prompt,
-          model: openai.image('dall-e-3'),
+          model: getImageModel(),
           size,
           abortSignal,
         });
 
         const id = createId();
-        const key = `${id}.png`;
-        const imageBuffer = Buffer.from(image.uint8Array);
-        const putObjectResult = await s3.send(
-          new PutObjectCommand({
-            Bucket: Resource.GeneratedImagesBucket.name,
-            Key: key,
-            Body: imageBuffer,
-            ContentType: 'image/png',
-            CacheControl: 'public, max-age=31536000, immutable',
-          }),
-        );
-        if (putObjectResult.$metadata.httpStatusCode !== 200) {
-          return {
-            status: 'error',
-            message: 'Could not upload generated image to storage. Please try again later.',
-          } as const;
-        }
+        const key = `generated-images/${id}.png`;
+        await getPublicMediaBucket().put(key, image.uint8Array, {
+          httpMetadata: {
+            contentType: 'image/png',
+            cacheControl: 'public, max-age=31536000, immutable',
+          },
+        });
 
         const [generatedImage] = await db
           .insert(userGeneratedImages)
           .values({
             id,
-            url: `${Resource.Cdn.url}/generated-images/${key}`,
+            url: getPublicMediaUrl(key),
             userPrompt: prompt,
             userId: input.userId,
           })
           .returning();
 
+        if (limit !== null) await limiter.commit(reservationId);
         return {
           status: 'success',
           message: 'Image generated',
           image: generatedImage,
         } as const;
       } catch (error) {
-        console.error('Error generating image', error);
-        await ratelimit.resetUsedTokens(input.userId).then(() =>
-          ratelimit.limit(input.userId, {
-            rate: ratelimitResult.limit - ratelimitResult.remaining,
-          }),
-        );
+        if (limit !== null) await limiter.rollback(reservationId);
         return {
           status: 'error',
           message: error instanceof Error ? error.message : 'An unknown error occurred',
@@ -378,23 +387,22 @@ export const generateImageTool = (input: {
   });
 
 export const tools = (input: {
-  dataStream: DataStreamWriter;
   userId: string;
   user?: User | null;
   roles?: Role[] | null;
   bibleAbbreviation?: string | null;
+  christianTradition?: string | null;
 }) => ({
-  askForHighlightColor: askForHighlightColorTool({ dataStream: input.dataStream }),
-  highlightVerse: highlightVerseTool({ dataStream: input.dataStream, userId: input.userId }),
-  bookmarkChapter: bookmarkChapterTool({ dataStream: input.dataStream, userId: input.userId }),
+  askForHighlightColor: askForHighlightColorTool(),
+  highlightVerse: highlightVerseTool({ userId: input.userId }),
+  bookmarkChapter: bookmarkChapterTool({ userId: input.userId }),
   generateImage: generateImageTool({
-    dataStream: input.dataStream,
     userId: input.userId,
     user: input.user,
     roles: input.roles,
   }),
   vectorStore: vectorStoreTool({
-    dataStream: input.dataStream,
     bibleAbbreviation: input.bibleAbbreviation,
+    christianTradition: input.christianTradition,
   }),
 });

@@ -115,12 +115,12 @@ const faqCategories: FAQCategory[] = [
       {
         question: 'Do I need to pay to use the service?',
         answer:
-          'We offer a free tier with basic features and a Pro subscription with advanced capabilities. You can start with our free tier and upgrade anytime. Pro subscriptions include a 7-day free trial.',
+          'We offer a Free plan for the core study experience and a Pro subscription with higher usage limits. You can start free and upgrade anytime.',
       },
       {
         question: 'What are the differences between Free and Pro plans?',
         answer:
-          'Free users have access to basic features including limited Bible translations, basic AI assistance, and daily usage limits. Pro users enjoy advanced AI models with deeper insights, higher usage limits, access to all Bible translations, advanced search capabilities, and priority support.',
+          'Free and Pro Readers receive the same AI answer quality and access to every rights-verified Bible translation. Pro provides higher usage limits for the AI Scripture Assistant, Semantic Scripture Search, suggestions, and image generation.',
       },
       {
         question: 'When will I be charged for a Pro subscription?',
@@ -167,10 +167,10 @@ function RouteComponent() {
               <TabsContent key={category.value} value={category.value}>
                 <H2 className='mb-4 font-semibold text-2xl'>{category.name} Questions</H2>
                 <Accordion type='multiple' className='rounded-md border border-border'>
-                  {category.faqs.map((faq, idx) => (
+                  {category.faqs.map((faq) => (
                     <AccordionItem
-                      key={`${category.value}-item-${idx}`}
-                      value={`${category.value}-item-${idx}`}
+                      key={`${category.value}-${faq.question}`}
+                      value={`${category.value}-${faq.question}`}
                       className='border-border'
                     >
                       <AccordionTrigger className='p-5 text-left hover:bg-muted/20'>

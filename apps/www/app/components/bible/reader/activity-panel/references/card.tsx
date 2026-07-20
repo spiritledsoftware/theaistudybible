@@ -24,7 +24,10 @@ const getReferences = createServerFn({ method: 'GET' })
       withMetadata: true,
       withEmbedding: false,
       limit: 12,
-      filter: `(type = "bible" or type = "BIBLE") and bibleAbbreviation = "${bibleAbbreviation}"`,
+      filter: {
+        type: { $in: ['bible', 'BIBLE'] },
+        bibleAbbreviation,
+      },
     });
     return { references };
   });
@@ -68,30 +71,40 @@ export const ReferencesCard = () => {
           }
           render={({ references }) => (
             <div className='flex w-full flex-1 flex-col space-y-4 overflow-y-auto rounded-lg border p-5'>
-              {references.map((reference, idx) => (
-                <div key={reference.id} className='flex w-full flex-col items-start justify-start'>
-                  <div className='flex w-full space-x-2'>
-                    <span className='font-bold'>{idx + 1}.</span>
-                    <div className='flex w-full flex-col space-y-2'>
-                      <H6>
-                        {reference
-                          .metadata!.name.replace(`(${brStore.bible.abbreviationLocal})`, '')
-                          .trim()}
-                        :
-                      </H6>
-                      <p className='line-clamp-5 truncate text-wrap'>
-                        {reference.content.replace(`- ${reference.metadata!.name}`, '').trim()}
-                      </p>
-                    </div>
-                  </div>
-                  <DrawerClose
-                    asChild
-                    className={cn(buttonVariants({ variant: 'link' }), 'text-accent-foreground')}
+              {references.map((reference, idx) => {
+                const name =
+                  typeof reference.metadata?.name === 'string' ? reference.metadata.name : '';
+                const url =
+                  typeof reference.metadata?.url === 'string' ? reference.metadata.url : undefined;
+
+                return (
+                  <div
+                    key={reference.id}
+                    className='flex w-full flex-col items-start justify-start'
                   >
-                    <Link to={reference.metadata!.url}>Read More</Link>
-                  </DrawerClose>
-                </div>
-              ))}
+                    <div className='flex w-full space-x-2'>
+                      <span className='font-bold'>{idx + 1}.</span>
+                      <div className='flex w-full flex-col space-y-2'>
+                        <H6>{name.replace(`(${brStore.bible.abbreviationLocal})`, '').trim()}:</H6>
+                        <p className='line-clamp-5 truncate text-wrap'>
+                          {reference.content.replace(`- ${name}`, '').trim()}
+                        </p>
+                      </div>
+                    </div>
+                    {url && (
+                      <DrawerClose
+                        asChild
+                        className={cn(
+                          buttonVariants({ variant: 'link' }),
+                          'text-accent-foreground',
+                        )}
+                      >
+                        <Link to={url}>Read More</Link>
+                      </DrawerClose>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           )}
         />

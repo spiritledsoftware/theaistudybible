@@ -1,11 +1,17 @@
 import { H6 } from '@/www/components/ui/typography';
 import type { useChat } from '@/www/hooks/use-chat';
-import type { ToolInvocation } from 'ai';
 import { AskForHighlightColorTool } from './ask-for-highlight-color';
 import { BookmarkTool } from './bookmark';
 import { HighlightVerseTool } from './highlight-verse';
 import { GenerateImageTool } from './image';
 import { VectorStoreTool } from './vector-store';
+
+export type ToolInvocation = {
+  args?: unknown;
+  result?: unknown;
+  toolCallId: string;
+  toolName: string;
+};
 
 export type ToolProps = {
   toolInvocation: ToolInvocation;
@@ -37,9 +43,9 @@ export const Tool = (props: ToolProps) => {
       return (
         <div className='flex w-full flex-col'>
           <H6>{props.toolInvocation.toolName}</H6>
-          {'result' in props.toolInvocation && props.toolInvocation.result && (
+          {props.toolInvocation.result !== undefined && (
             <p>
-              <strong>Result:</strong> {props.toolInvocation.result.toString()}
+              <strong>Result:</strong> {String(props.toolInvocation.result)}
             </p>
           )}
         </div>

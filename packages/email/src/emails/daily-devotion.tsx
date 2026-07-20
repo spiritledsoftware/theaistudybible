@@ -1,3 +1,4 @@
+import { env } from '@/core/env';
 import { toTitleCase } from '@/core/utils/string';
 import { Body } from '@/email/components/body';
 import { Head } from '@/email/components/head';
@@ -15,9 +16,8 @@ import {
   Row,
   Section,
   Text,
-} from '@react-email/components';
+} from 'jsx-email';
 import { formatDate } from 'date-fns';
-import { Resource } from 'sst';
 import type { z } from 'zod';
 
 export type DailyDevotionEmailProps = Omit<z.infer<typeof DailyDevotionEmailSchema>, 'type'>;
@@ -32,7 +32,7 @@ export const DailyDevotionEmail = ({ devotion, devotionImage }: DailyDevotionEma
         <Body>
           <Container>
             <Img
-              src={`${Resource.WebAppUrl.value}/logos/light.png`}
+              src={`${env.WEB_APP_URL}/logos/light.png`}
               alt='Logo'
               width={512}
               className='w-1/2'
@@ -52,7 +52,7 @@ export const DailyDevotionEmail = ({ devotion, devotionImage }: DailyDevotionEma
                 </Column>
                 <Column className='flex items-center justify-end'>
                   <Link
-                    href={`${Resource.WebAppUrl.value}/devotion/${devotion.id}`}
+                    href={`${env.WEB_APP_URL}/devotion/${devotion.id}`}
                     className='h-fit w-fit p-0 text-xs'
                   >
                     Read on the Web
@@ -92,7 +92,7 @@ export const DailyDevotionEmail = ({ devotion, devotionImage }: DailyDevotionEma
             <div className='flex justify-center'>
               <div className='flex flex-wrap gap-4'>
                 {devotion.diveDeeperQueries.map((query) => (
-                  <Link key={query} href={`${Resource.WebAppUrl.value}/chat?query=${query}`}>
+                  <Link key={query} href={`${env.WEB_APP_URL}/chat?query=${query}`}>
                     {query}
                   </Link>
                 ))}
@@ -104,7 +104,7 @@ export const DailyDevotionEmail = ({ devotion, devotionImage }: DailyDevotionEma
               If you have any questions or feedback, please reply to this email.
               <br />
               If you no longer wish to receive these emails, you can edit your settings{' '}
-              <Link href={`${Resource.WebAppUrl.value}/profile`}>here</Link>.
+              <Link href={`${env.WEB_APP_URL}/profile`}>here</Link>.
             </Text>
           </Container>
         </Body>

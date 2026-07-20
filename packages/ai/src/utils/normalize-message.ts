@@ -1,14 +1,20 @@
-import type { Message as DbMessage } from '@/schemas/chats/messages/types';
-import type { Message } from 'ai';
+import type { UIMessage } from 'ai';
 
-export const normalizeMessage = (message: DbMessage): Message => {
+interface StoredMessage {
+  content: string;
+  id: string;
+  parts?: unknown[] | null;
+  role: UIMessage['role'] | 'data';
+}
+
+export function normalizeMessage(message: StoredMessage): UIMessage {
+  const storedParts = message.parts;
   return {
-    ...message,
-    createdAt: message.createdAt ? new Date(message.createdAt) : undefined, // just in case it's a string
-    reasoning: message.reasoning ?? undefined,
-    annotations: message.annotations ?? undefined,
-    toolInvocations: message.toolInvocations ?? undefined,
-    experimental_attachments: message.experimental_attachments ?? undefined,
-    parts: message.parts ?? undefined,
+    id: message.id,
+    parts:
+      storedParts && storedParts.length > 0
+        ? (storedParts as UIMessage['parts'])
+        : [{ text: message.content, type: 'text' }],
+    role: message.role === 'data' ? 'assistant' : message.role,
   };
-};
+}

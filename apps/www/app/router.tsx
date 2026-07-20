@@ -5,7 +5,7 @@ import { Button } from './components/ui/button';
 import { CodeBlock, H1, P } from './components/ui/typography';
 import { routeTree } from './routeTree.gen';
 
-export function createRouter() {
+export function getRouter() {
   const queryClient = new QueryClient({
     defaultOptions: {
       queries: {
@@ -50,6 +50,6 @@ export function createRouter() {
 
 declare module '@tanstack/react-router' {
   interface Register {
-    router: ReturnType<typeof createRouter>;
+    router: ReturnType<typeof getRouter>;
   }
 }

@@ -110,7 +110,7 @@ export const Menu = (props: MenuProps) => {
               </li>
               <li className='h-full w-full'>
                 <NavigationMenuLink className='h-full w-full' asChild>
-                  <a href={import.meta.env.PUBLIC_DONATION_LINK}>
+                  <a href={import.meta.env.VITE_DONATION_LINK}>
                     <H6 className='flex items-center gap-2'>
                       <CreditCard />
                       Donate

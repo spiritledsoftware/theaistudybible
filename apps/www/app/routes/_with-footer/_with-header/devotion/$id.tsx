@@ -12,7 +12,6 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, createFileRoute } from '@tanstack/react-router';
 import { createServerFn } from '@tanstack/react-start';
 import { useEffect, useMemo, useState } from 'react';
-import { Helmet } from 'react-helmet';
 import { useWindowSize } from 'usehooks-ts';
 import { z } from 'zod';
 
@@ -32,7 +31,8 @@ const getDevotion = createServerFn({ method: 'GET' })
   .validator(z.object({ id: z.string() }))
   .handler(async ({ data: { id } }) => {
     const devotion = await db.query.devotions.findFirst({
-      where: (devotions, { eq }) => eq(devotions.id, id),
+      where: (devotions, { and, eq }) =>
+        and(eq(devotions.id, id), eq(devotions.publicationStatus, 'PUBLISHED')),
       with: { images: true },
     });
     return { devotion: devotion ?? null };
@@ -190,7 +190,7 @@ const MetaTags = ({
   );
 
   return (
-    <Helmet>
+    <>
       <title>{title}</title>
       <meta name='description' content={description} />
       <meta name='keywords' content={keywords} />
@@ -200,6 +200,6 @@ const MetaTags = ({
       <meta name='twitter:card' content='summary' />
       <meta name='twitter:title' content={title} />
       <meta name='twitter:description' content={description} />
-    </Helmet>
+    </>
   );
 };

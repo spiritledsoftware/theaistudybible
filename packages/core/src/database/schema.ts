@@ -1,6 +1,7 @@
+import { CHRISTIAN_TRADITIONS, type SourceChristianTradition } from '@/core/christian-traditions';
 import type { Content } from '@/schemas/bibles/contents';
 import type { Metadata } from '@/schemas/utils/types';
-import type { Attachment, FinishReason, JSONValue, Message, ToolInvocation } from 'ai';
+import type { FinishReason, JSONValue } from 'ai';
 import { add } from 'date-fns';
 import { relations } from 'drizzle-orm';
 import type { AnySQLiteColumn } from 'drizzle-orm/sqlite-core';
@@ -162,11 +163,51 @@ export const userSettings = sqliteTable(
     ),
     emailNotifications: integer('email_notifications', { mode: 'boolean' }).notNull().default(true),
     aiInstructions: text('ai_instructions'),
+    christianTradition: text('christian_tradition', {
+      enum: CHRISTIAN_TRADITIONS,
+    }),
   },
   (table) => [
     uniqueIndex('user_settings_user_id_idx').on(table.userId),
     index('user_settings_preferred_bible_abbreviation_idx').on(table.preferredBibleAbbreviation),
   ],
+);
+
+export const christianTraditionApprovals = sqliteTable(
+  'christian_tradition_approvals',
+  {
+    tradition: text('tradition', { enum: CHRISTIAN_TRADITIONS }).primaryKey(),
+    framingGuideVersion: text('framing_guide_version').notNull(),
+    corpusVersion: text('corpus_version').notNull(),
+    testSuiteVersion: text('test_suite_version').notNull(),
+    approvedAt: timestamp('approved_at', { withTimezone: true }).notNull(),
+    reviewerOneId: text('reviewer_one_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    reviewerTwoId: text('reviewer_two_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+  },
+  (table) => [
+    index('christian_tradition_approvals_reviewer_one_idx').on(table.reviewerOneId),
+    index('christian_tradition_approvals_reviewer_two_idx').on(table.reviewerTwoId),
+  ],
+);
+
+export const christianTraditionApprovalsRelations = relations(
+  christianTraditionApprovals,
+  ({ one }) => ({
+    reviewerOne: one(users, {
+      fields: [christianTraditionApprovals.reviewerOneId],
+      references: [users.id],
+      relationName: 'christianTraditionReviewerOne',
+    }),
+    reviewerTwo: one(users, {
+      fields: [christianTraditionApprovals.reviewerTwoId],
+      references: [users.id],
+      relationName: 'christianTraditionReviewerTwo',
+    }),
+  }),
 );
 
 export const userSettingsRelations = relations(userSettings, ({ one }) => ({
@@ -305,10 +346,10 @@ export const messages = sqliteTable(
     }).notNull(),
     data: text('data', { mode: 'json' }).$type<JSONValue>(),
     annotations: text('annotations', { mode: 'json' }).$type<JSONValue[]>(),
-    toolInvocations: text('tool_invocations', { mode: 'json' }).$type<ToolInvocation[]>(),
+    toolInvocations: text('tool_invocations', { mode: 'json' }).$type<JSONValue[]>(),
     finishReason: text('finish_reason').$type<FinishReason>(),
-    experimental_attachments: text('attachments', { mode: 'json' }).$type<Attachment[]>(),
-    parts: text('parts', { mode: 'json' }).$type<NonNullable<Message['parts']>>(),
+    experimental_attachments: text('attachments', { mode: 'json' }).$type<JSONValue[]>(),
+    parts: text('parts', { mode: 'json' }).$type<JSONValue[]>(),
 
     // Custom fields
     anonymous: integer('anonymous', { mode: 'boolean' }).notNull().default(false),
@@ -531,6 +572,22 @@ export const userGeneratedImagesToSourceDocumentsRelations = relations(
   }),
 );
 
+export const queueDeliveries = sqliteTable(
+  'queue_deliveries',
+  {
+    key: text('key').primaryKey(),
+    queue: text('queue').notNull(),
+    messageId: text('message_id').notNull(),
+    processedAt: timestamp('processed_at', { withTimezone: true })
+      .notNull()
+      .$defaultFn(() => new Date()),
+  },
+  (table) => [
+    uniqueIndex('queue_deliveries_queue_message_idx').on(table.queue, table.messageId),
+    index('queue_deliveries_processed_at_idx').on(table.processedAt),
+  ],
+);
+
 export const devotions = sqliteTable(
   'devotions',
   {
@@ -544,11 +601,21 @@ export const devotions = sqliteTable(
       .notNull()
       .default([])
       .$type<string[]>(),
+    publicationStatus: text('publication_status', {
+      enum: ['PENDING', 'PUBLISHED', 'QUARANTINED'],
+    })
+      .notNull()
+      .default('PENDING'),
+    validationErrors: text('validation_errors', { mode: 'json' })
+      .$type<string[]>()
+      .notNull()
+      .default([]),
     failed: integer('failed', { mode: 'boolean' }).notNull().default(false),
   },
   (table) => [
     index('devotions_topic_idx').on(table.topic),
     index('devotions_created_at_idx').on(table.createdAt),
+    index('devotions_publication_status_idx').on(table.publicationStatus),
     index('devotions_failed_idx').on(table.failed),
   ],
 );
@@ -658,9 +725,26 @@ export const dataSources = sqliteTable(
     name: text('name').notNull(),
     url: text('url').notNull(),
     type: text('type', {
-      enum: ['WEB_CRAWL', 'FILE', 'WEBPAGE', 'REMOTE_FILE', 'YOUTUBE'],
+      enum: ['FILE', 'WEBPAGE', 'REMOTE_FILE'],
     }).notNull(),
     metadata: text('metadata', { mode: 'json' }).$type<Metadata>().default({}).notNull(),
+    version: text('version').notNull().default('unspecified'),
+    checksum: text('checksum'),
+    rightsBasis: text('rights_basis', {
+      enum: ['LICENSED', 'PERMISSION', 'PUBLIC_DOMAIN'],
+    }),
+    attribution: text('attribution'),
+    traditionClassification: text('tradition_classification', { mode: 'json' })
+      .$type<SourceChristianTradition[]>()
+      .notNull()
+      .default([]),
+    approvalStatus: text('approval_status', {
+      enum: ['PENDING', 'APPROVED', 'REJECTED'],
+    })
+      .notNull()
+      .default('PENDING'),
+    approvedAt: timestamp('approved_at', { withTimezone: true }),
+    approvedBy: text('approved_by').references(() => users.id, { onDelete: 'set null' }),
     numberOfDocuments: integer('number_of_documents').notNull().default(0),
     syncSchedule: text('sync_schedule', {
       enum: ['DAILY', 'WEEKLY', 'MONTHLY', 'NEVER'],

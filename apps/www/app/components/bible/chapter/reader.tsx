@@ -9,7 +9,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Link, useNavigate, useRouter } from '@tanstack/react-router';
 import { createServerFn } from '@tanstack/react-start';
 import { ChevronLeft, ChevronRight, Copyright } from 'lucide-react';
-import { useEffect, useMemo, useRef } from 'react';
+import { type RefObject, useEffect, useRef } from 'react';
 import { z } from 'zod';
 import { Button, buttonVariants } from '../../ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../../ui/tooltip';
@@ -101,6 +101,125 @@ export type ChapterReaderProps = {
   chapterNumber: number;
 };
 
+type ChapterReaderData = Awaited<ReturnType<typeof getChapterReaderData>>;
+
+function ChapterReaderContent({
+  bible,
+  book,
+  chapter,
+  rightsHolder,
+  containerRef,
+}: ChapterReaderData & { containerRef: RefObject<HTMLDivElement | null> }) {
+  const navigate = useNavigate();
+  const router = useRouter();
+  const { setBible, setBook, setChapter, setVerse } = useBibleStore((state) => ({
+    setBible: state.setBible,
+    setBook: state.setBook,
+    setChapter: state.setChapter,
+    setVerse: state.setVerse,
+  }));
+
+  useEffect(() => {
+    setBible(bible);
+    setBook(book);
+    setChapter(chapter);
+    setVerse(null);
+  }, [bible, book, chapter, setBible, setBook, setChapter, setVerse]);
+
+  const previousChapter = chapter.previous ?? book.previous?.chapters[0];
+  const previousChapterRoute =
+    `/bible/${bible.abbreviation}/${previousChapter?.code.split('.')[0]}` +
+    `/${previousChapter?.number}`;
+  const nextChapter = chapter.next ?? book.next?.chapters[0];
+  const nextChapterRoute = `/bible/${bible.abbreviation}/${nextChapter?.code.split('.')[0]}/${nextChapter?.number}`;
+
+  useEffect(() => {
+    if (previousChapter) {
+      router.preloadRoute({ to: previousChapterRoute });
+    }
+
+    if (nextChapter) {
+      router.preloadRoute({ to: nextChapterRoute });
+    }
+  }, [router, previousChapter, nextChapter, previousChapterRoute, nextChapterRoute]);
+
+  useSwipe(containerRef, {
+    onSwipeLeft: () => {
+      if (nextChapter && !router.state.isLoading) {
+        navigate({ to: nextChapterRoute });
+      }
+    },
+    onSwipeRight: () => {
+      if (previousChapter && !router.state.isLoading) {
+        navigate({ to: previousChapterRoute });
+      }
+    },
+  });
+
+  return (
+    <BibleReaderProvider bible={bible} book={book} chapter={chapter}>
+      <BibleReaderMenu />
+      <div className='my-5 w-full'>
+        <ReaderContent contents={chapter.content} />
+      </div>
+      <div className='mb-20 flex flex-col items-center gap-2'>
+        <Muted>
+          Copyright
+          <Copyright className='mx-2 inline-block size-4' />
+          <Button variant='link' className='p-0 text-muted-foreground' asChild>
+            <Link to={rightsHolder.url} target='_blank'>
+              {rightsHolder.nameLocal}
+            </Link>
+          </Button>
+        </Muted>
+        <div
+          // biome-ignore lint/security/noDangerouslySetInnerHtml: Rights-holder markup is sanitized during import
+          dangerouslySetInnerHTML={{ __html: bible.copyrightStatement }}
+          className='flex flex-col items-center text-center text-muted-foreground text-xs'
+        />
+      </div>
+      {previousChapter && (
+        <Tooltip>
+          <TooltipTrigger
+            className={cn(
+              buttonVariants(),
+              'sm:-translate-y-1/2 fixed bottom-safe-offset-1 left-safe-offset-1 flex size-10 items-center justify-center rounded-full p-2 sm:top-1/2 md:left-safe-offset-2 md:size-12 lg:left-[12%]',
+              router.state.isLoading && 'pointer-events-none opacity-50',
+            )}
+            asChild
+          >
+            <Link to={previousChapterRoute}>
+              <ChevronLeft className='size-full' />
+            </Link>
+          </TooltipTrigger>
+          <TooltipContent side='right'>
+            <p>{previousChapter.name}</p>
+          </TooltipContent>
+        </Tooltip>
+      )}
+      {nextChapter && (
+        <Tooltip>
+          <TooltipTrigger
+            className={cn(
+              buttonVariants(),
+              'sm:-translate-y-1/2 fixed right-safe-offset-1 bottom-safe-offset-1 flex size-10 items-center justify-center rounded-full p-2 sm:top-1/2 md:right-safe-offset-2 md:size-12 lg:right-[12%]',
+              router.state.isLoading && 'pointer-events-none opacity-50',
+            )}
+            asChild
+          >
+            <Link to={nextChapterRoute}>
+              <ChevronRight className='size-full' />
+            </Link>
+          </TooltipTrigger>
+          <TooltipContent side='left'>
+            <p>{nextChapter.name}</p>
+          </TooltipContent>
+        </Tooltip>
+      )}
+    </BibleReaderProvider>
+  );
+}
+
 export function ChapterReader(props: ChapterReaderProps) {
   const navigate = useNavigate();
 
@@ -146,121 +265,7 @@ export function ChapterReader(props: ChapterReaderProps) {
             </div>
           </div>
         }
-        render={({ bible, book, chapter, rightsHolder }) => {
-          useEffect(() => {
-            setBible(bible);
-            setBook(book);
-            setChapter(chapter);
-            setVerse(null);
-          }, [bible, book, chapter]);
-
-          const previousChapter = useMemo(
-            () => chapter.previous ?? book.previous?.chapters[0],
-            [chapter, book],
-          );
-          const previousChapterRoute = useMemo(
-            () =>
-              `/bible/${bible.abbreviation}/${previousChapter?.code.split('.')[0]}/${previousChapter?.number}`,
-            [bible, previousChapter],
-          );
-
-          const nextChapter = useMemo(
-            () => chapter.next ?? book.next?.chapters[0],
-            [chapter, book],
-          );
-          const nextChapterRoute = useMemo(
-            () =>
-              `/bible/${bible.abbreviation}/${nextChapter?.code.split('.')[0]}/${nextChapter?.number}`,
-            [bible, nextChapter],
-          );
-
-          const router = useRouter();
-          useEffect(() => {
-            if (previousChapter) {
-              router.preloadRoute({ to: previousChapterRoute });
-            }
-
-            if (nextChapter) {
-              router.preloadRoute({ to: nextChapterRoute });
-            }
-          }, [router, previousChapter, nextChapter, previousChapterRoute, nextChapterRoute]);
-
-          useSwipe(containerRef, {
-            onSwipeLeft: () => {
-              if (nextChapter && !router.state.isLoading) {
-                navigate({ to: nextChapterRoute });
-              }
-            },
-            onSwipeRight: () => {
-              if (previousChapter && !router.state.isLoading) {
-                navigate({ to: previousChapterRoute });
-              }
-            },
-          });
-
-          return (
-            <BibleReaderProvider bible={bible} book={book} chapter={chapter}>
-              <BibleReaderMenu />
-              <div className='my-5 w-full'>
-                <ReaderContent contents={chapter.content} />
-              </div>
-              <div className='mb-20 flex flex-col items-center gap-2'>
-                <Muted>
-                  Copyright
-                  <Copyright className='mx-2 inline-block size-4' />
-                  <Button variant='link' className='p-0 text-muted-foreground' asChild>
-                    <Link to={rightsHolder.url} target='_blank'>
-                      {rightsHolder.nameLocal}
-                    </Link>
-                  </Button>
-                </Muted>
-                <div
-                  // biome-ignore lint/security/noDangerouslySetInnerHtml: Fine here
-                  dangerouslySetInnerHTML={{ __html: bible.copyrightStatement }}
-                  className='flex flex-col items-center text-center text-muted-foreground text-xs'
-                />
-              </div>
-              {previousChapter && (
-                <Tooltip>
-                  <TooltipTrigger
-                    className={cn(
-                      buttonVariants(),
-                      'sm:-translate-y-1/2 fixed bottom-safe-offset-1 left-safe-offset-1 flex size-10 items-center justify-center rounded-full p-2 sm:top-1/2 md:left-safe-offset-2 md:size-12 lg:left-[12%]',
-                      router.state.isLoading && 'pointer-events-none opacity-50',
-                    )}
-                    asChild
-                  >
-                    <Link to={previousChapterRoute}>
-                      <ChevronLeft className='size-full' />
-                    </Link>
-                  </TooltipTrigger>
-                  <TooltipContent side='right'>
-                    <p>{previousChapter.name}</p>
-                  </TooltipContent>
-                </Tooltip>
-              )}
-              {nextChapter && (
-                <Tooltip>
-                  <TooltipTrigger
-                    className={cn(
-                      buttonVariants(),
-                      'sm:-translate-y-1/2 fixed right-safe-offset-1 bottom-safe-offset-1 flex size-10 items-center justify-center rounded-full p-2 sm:top-1/2 md:right-safe-offset-2 md:size-12 lg:right-[12%]',
-                      router.state.isLoading && 'pointer-events-none opacity-50',
-                    )}
-                    asChild
-                  >
-                    <Link to={nextChapterRoute}>
-                      <ChevronRight className='size-full' />
-                    </Link>
-                  </TooltipTrigger>
-                  <TooltipContent side='left'>
-                    <p>{nextChapter.name}</p>
-                  </TooltipContent>
-                </Tooltip>
-              )}
-            </BibleReaderProvider>
-          );
-        }}
+        render={(data) => <ChapterReaderContent {...data} containerRef={containerRef} />}
       />
     </div>
   );

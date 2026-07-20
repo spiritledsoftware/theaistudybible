@@ -4,9 +4,7 @@
     "target": "ESNext",
     "lib": ["ESNext", "ESNext.AsyncIterable"],
     "module": "ESNext",
-    "moduleResolution": "Node",
     "types": ["@cloudflare/workers-types"],
-    "baseUrl": "./",
     "paths": {
       "@/workers": ["./src"],
       "@/workers/*": ["./src/*"],
@@ -20,8 +18,6 @@
       "@/email/*": ["../../packages/email/src/*"],
       "@/www": ["../www/src"],
       "@/www/*": ["../www/src/*"],
-      "@/functions": ["../functions/src"],
-      "@/functions/*": ["../functions/src/*"],
       "@/scripts": ["../../tools/scripts/src"],
       "@/scripts/*": ["../../tools/scripts/src/*"]
     }

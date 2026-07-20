@@ -190,7 +190,7 @@ export const Apple = (props: ComponentProps<'svg'>) => {
       xmlns='http://www.w3.org/2000/svg'
       xmlnsXlink='http://www.w3.org/1999/xlink'
       viewBox='0 0 22.773 22.773'
-      // @ts-ignore
+      // @ts-expect-error
       xml:space='preserve'
       {...props}
     >

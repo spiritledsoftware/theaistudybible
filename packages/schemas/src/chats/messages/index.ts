@@ -1,13 +1,9 @@
 import { messages } from '@/core/database/schema';
 import { defaultRefine } from '@/schemas/utils/refine';
-import type { Attachment, FinishReason, JSONValue, Message, ToolInvocation } from 'ai';
+import { JSONSchema } from '@/schemas/utils/metadata';
+import type { FinishReason } from 'ai';
 import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
 import { z } from 'zod';
-
-const LiteralSchema = z.union([z.string(), z.number(), z.boolean(), z.null()]);
-const JSONSchema: z.ZodType<JSONValue> = z.lazy(() =>
-  z.union([LiteralSchema, z.array(JSONSchema), z.record(JSONSchema)]),
-);
 
 export const ToolCallSchema = z
   .object({
@@ -15,7 +11,7 @@ export const ToolCallSchema = z
     step: z.number().optional(),
     toolName: z.string().min(1),
     toolCallId: z.string().min(1),
-    args: z.record(JSONSchema),
+    args: z.record(z.string(), JSONSchema),
   })
   .passthrough();
 
@@ -25,12 +21,12 @@ export const ToolResultSchema = z
     step: z.number().optional(),
     toolName: z.string().min(1),
     toolCallId: z.string().min(1),
-    args: z.record(JSONSchema),
+    args: z.record(z.string(), JSONSchema),
     result: JSONSchema,
   })
   .passthrough();
 
-export const ToolInvocationSchema: z.ZodType<ToolInvocation> = z.discriminatedUnion('state', [
+export const ToolInvocationSchema = z.discriminatedUnion('state', [
   ToolCallSchema,
   ToolResultSchema,
 ]);
@@ -42,10 +38,9 @@ export const FinishReasonSchema: z.ZodType<FinishReason> = z.enum([
   'other',
   'stop',
   'tool-calls',
-  'unknown',
 ]);
 
-export const AttachmentSchema: z.ZodType<Attachment> = z.object({
+export const AttachmentSchema = z.object({
   name: z.string().optional(),
   contentType: z.string().optional(),
   url: z.string().url(),
@@ -104,15 +99,14 @@ export const StepStartPartSchema = z.object({
   type: z.literal('step-start'),
 });
 
-export const MessagePartSchema: z.ZodType<NonNullable<Message['parts']>[number]> =
-  z.discriminatedUnion('type', [
-    TextPartSchema,
-    ReasoningPartSchema,
-    ToolInvocationPartSchema,
-    SourcePartSchema,
-    FilePartSchema,
-    StepStartPartSchema,
-  ]);
+export const MessagePartSchema = z.discriminatedUnion('type', [
+  TextPartSchema,
+  ReasoningPartSchema,
+  ToolInvocationPartSchema,
+  SourcePartSchema,
+  FilePartSchema,
+  StepStartPartSchema,
+]);
 
 const refine = {
   ...defaultRefine,
@@ -121,10 +115,9 @@ const refine = {
   finishReason: FinishReasonSchema.nullish(),
   toolInvocations: z.array(ToolInvocationSchema).nullish(),
   experimental_attachments: z.array(AttachmentSchema).nullish(),
-  parts: z.array(MessagePartSchema).nullish(),
+  parts: z.array(JSONSchema).nullish(),
 };
 
-// @ts-ignore
 export const MessageSchema = createSelectSchema(messages, refine);
 
 export const CreateMessageSchema = createInsertSchema(messages, refine).omit({

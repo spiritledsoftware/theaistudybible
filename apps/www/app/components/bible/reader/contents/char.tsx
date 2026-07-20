@@ -3,7 +3,7 @@ import type { VerseNote } from '@/schemas/bibles/verses/types';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/www/components/ui/tooltip';
 import { cn } from '@/www/lib/utils';
 import type { HighlightInfo } from '@/www/types/bible';
-import { useCallback, useMemo } from 'react';
+import { useCallback } from 'react';
 import { Contents } from './index';
 
 export type CharContentProps = {
@@ -12,8 +12,7 @@ export type CharContentProps = {
   className?: string;
   highlights?: HighlightInfo[];
   notes?: VerseNote[];
-  // biome-ignore lint/suspicious/noExplicitAny: <explanation>
-  props: any;
+  props: Record<string, string>;
 };
 
 export function CharContent({
@@ -39,17 +38,11 @@ export function CharContent({
     [content, style, className, props, highlights, notes],
   );
 
-  const strongsNumber = useMemo(() => content.attrs?.strong, [content.attrs]);
+  const strongsNumber = content.attrs?.strong;
   if (strongsNumber) {
-    const language = useMemo(
-      () => (strongsNumber.startsWith('H') ? 'hebrew' : 'greek'),
-      [strongsNumber],
-    );
-    const number = useMemo(() => strongsNumber.slice(1), [strongsNumber]);
-    const strongsLink = useMemo(
-      () => `https://biblehub.com/strongs/${language}/${number}.htm`,
-      [language, number],
-    );
+    const language = strongsNumber.startsWith('H') ? 'hebrew' : 'greek';
+    const number = strongsNumber.slice(1);
+    const strongsLink = `https://biblehub.com/strongs/${language}/${number}.htm`;
 
     return (
       <Tooltip>

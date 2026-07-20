@@ -1,12 +1,5 @@
 import * as schema from '@/core/database/schema';
-import * as Sentry from '@sentry/node';
-import { drizzle } from 'drizzle-orm/libsql';
-import { libsqlIntegration } from 'sentry-integration-libsql-client';
-import { Resource } from 'sst';
+import { env } from '@/core/env';
+import { drizzle } from 'drizzle-orm/d1';
 
-export const db = drizzle({
-  connection: { url: Resource.Database.url, authToken: Resource.Database.token || undefined },
-  schema,
-});
-
-Sentry.addIntegration(libsqlIntegration(db.$client, Sentry));
+export const db = drizzle(env.DATABASE, { schema });

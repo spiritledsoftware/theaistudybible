@@ -1,5 +1,5 @@
 import type { useChat } from '@/www/hooks/use-chat';
-import type { Message as AiMessage } from '@ai-sdk/react';
+import type { UIMessage } from 'ai';
 import { ChevronUp } from 'lucide-react';
 import type { RefObject } from 'react';
 import React from 'react';
@@ -9,7 +9,7 @@ import { EmptyWindow } from './empty-window';
 import { Message } from './message';
 
 export type ChatMessageListProps = {
-  messages: AiMessage[];
+  messages: UIMessage[];
   messagesQuery: ReturnType<typeof useChat>['messagesQuery'];
   isLoading: boolean;
   append: ReturnType<typeof useChat>['append'];

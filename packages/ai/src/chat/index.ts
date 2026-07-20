@@ -7,32 +7,78 @@ import {
 } from '@/core/database/schema';
 import { createId } from '@/core/utils/id';
 import type { Bible } from '@/schemas/bibles/types';
-import type { Message, ToolInvocationPart } from '@/schemas/chats/messages/types';
+import type { Message } from '@/schemas/chats/messages/types';
 import type { Chat } from '@/schemas/chats/types';
 import type { Role } from '@/schemas/roles/types';
-import type { UserSettings } from '@/schemas/users/types';
-import type { User } from '@/schemas/users/types';
-import type { DataStreamWriter } from 'ai';
-import { Output, appendResponseMessages, generateText, streamText } from 'ai';
-import { initLogger, wrapAISDKModel } from 'braintrust';
+import type { User, UserSettings } from '@/schemas/users/types';
+import { JSONSchema } from '@/schemas/utils/metadata';
+import {
+  Output,
+  convertToModelMessages,
+  generateText,
+  getToolName,
+  isStepCount,
+  isToolUIPart,
+  streamText,
+  toUIMessageStream,
+  type FinishReason,
+  type UIMessage,
+  type UIMessageChunk,
+} from 'ai';
 import { eq } from 'drizzle-orm';
-import { Resource } from 'sst';
 import { z } from 'zod';
-import { type ChatModelInfo, defaultChatModel } from '../models';
-import { registry } from '../provider-registry';
-import type { DocumentWithScore } from '../types/document';
+import { getChatContextSize, getChatModel } from '../models';
 import { messagesToString, numTokensFromString } from '../utils';
 import { getValidMessages } from '../utils/get-valid-messages';
-import { normalizeMessage } from '../utils/normalize-message';
 import { systemPrompt } from './system-prompt';
 import { tools } from './tools';
 
-initLogger({
-  projectName: Resource.BrainTrustProjectName.value,
-  apiKey: Resource.BrainTrustApiKey.value,
+const maxResponseTokens = 4096;
+
+const documentReferenceSchema = z.object({
+  id: z.string(),
+  score: z.number(),
+});
+const vectorStoreOutputSchema = z.object({
+  documents: z.array(documentReferenceSchema),
+  status: z.literal('success'),
+});
+const generatedImageOutputSchema = z.object({
+  image: z.object({ id: z.string() }),
+  status: z.literal('success'),
 });
 
-export const renameChat = async ({
+interface StoredMessage {
+  content: string;
+  id: string;
+  parts?: unknown[] | null;
+  role: UIMessage['role'] | 'data';
+}
+
+export interface ChatGenerationEvent {
+  finishReason?: FinishReason;
+  isAborted: boolean;
+}
+
+export interface ChatStepEvent {
+  finishReason: FinishReason;
+}
+
+export interface CreateChatChainOptions {
+  abortSignal?: AbortSignal;
+  additionalContext?: string | null;
+  bible?: Bible;
+  chat: Chat;
+  onEnd?: (event: ChatGenerationEvent) => Promise<void> | void;
+  onError?: (error: unknown) => Promise<void> | void;
+  onStepEnd?: (event: ChatStepEvent) => Promise<void> | void;
+  roles?: Role[] | null;
+  settings?: UserSettings | null;
+  user?: User | null;
+  userId: string;
+}
+
+export async function renameChat({
   chatId,
   messages,
   additionalContext,
@@ -40,18 +86,15 @@ export const renameChat = async ({
   chatId: string;
   messages: Pick<Message, 'role' | 'content'>[];
   additionalContext?: string | null;
-}) => {
-  const {
-    experimental_output: { title },
-  } = await generateText({
-    // @ts-expect-error
-    model: registry.languageModel(`${defaultChatModel.host}:${defaultChatModel.id}`),
-    experimental_output: Output.object({
+}) {
+  const { output } = await generateText({
+    model: getChatModel(),
+    output: Output.object({
       schema: z.object({
         title: z.string().describe('The new title of the chat'),
       }),
     }),
-    system: `Given the following conversation, you must generate a new title for the conversation. The new title must be short and descriptive.
+    instructions: `Given the following conversation, you must generate a new title for the conversation. The new title must be short and descriptive.
 Here are some additional rules for you to follow:
 - Do not put your title in quotes.
 - Your title should be no more than 10 words.
@@ -73,53 +116,136 @@ What's the new title?`,
 
   const [chat] = await db
     .update(chats)
-    .set({
-      name: title,
-    })
+    .set({ name: output.title })
     .where(eq(chats.id, chatId))
     .returning();
 
   return chat;
-};
+}
 
-const maxResponseTokens = 4096;
+function toUIMessage(message: StoredMessage): UIMessage {
+  const role = message.role === 'data' ? 'assistant' : message.role;
+  const storedParts = message.parts;
+  const parts =
+    storedParts && storedParts.length > 0
+      ? (storedParts as UIMessage['parts'])
+      : [{ type: 'text' as const, text: message.content }];
 
-export type CreateChatChainOptions = Omit<
-  Parameters<typeof streamText<ReturnType<typeof tools>>>[0],
-  'model' | 'system' | 'messages' | 'tools' | 'maxTokens'
-> & {
+  return { id: message.id, parts, role };
+}
+
+function messageText(message: UIMessage) {
+  return message.parts
+    .filter((part) => part.type === 'text')
+    .map((part) => part.text)
+    .join('');
+}
+
+async function persistSourceReferences(messageId: string, message: UIMessage) {
+  const vectorPart = message.parts.find(
+    (part) => isToolUIPart(part) && getToolName(part) === 'vectorStore',
+  );
+  if (
+    !vectorPart ||
+    !isToolUIPart(vectorPart) ||
+    getToolName(vectorPart) !== 'vectorStore' ||
+    vectorPart.state !== 'output-available'
+  ) {
+    return;
+  }
+
+  const vectorResult = vectorStoreOutputSchema.safeParse(vectorPart.output);
+  if (!vectorResult.success) return;
+
+  await db
+    .insert(messagesToSourceDocuments)
+    .values(
+      vectorResult.data.documents.map((document) => ({
+        messageId,
+        sourceDocumentId: document.id,
+        distance: 1 - document.score,
+        distanceMetric: 'cosine' as const,
+      })),
+    )
+    .onConflictDoNothing();
+
+  const imagePart = message.parts.find(
+    (part) => isToolUIPart(part) && getToolName(part) === 'generateImage',
+  );
+  if (
+    !imagePart ||
+    !isToolUIPart(imagePart) ||
+    getToolName(imagePart) !== 'generateImage' ||
+    imagePart.state !== 'output-available'
+  ) {
+    return;
+  }
+
+  const imageResult = generatedImageOutputSchema.safeParse(imagePart.output);
+  if (!imageResult.success) return;
+
+  await db
+    .insert(userGeneratedImagesToSourceDocuments)
+    .values(
+      vectorResult.data.documents.map((document) => ({
+        userGeneratedImageId: imageResult.data.image.id,
+        sourceDocumentId: document.id,
+        distance: 1 - document.score,
+        distanceMetric: 'cosine' as const,
+      })),
+    )
+    .onConflictDoNothing();
+}
+
+async function persistResponseMessage({
+  chat,
+  finishReason,
+  lastUserMessageId,
+  message,
+  userId,
+}: {
   chat: Chat;
-  modelInfo: ChatModelInfo;
+  finishReason?: FinishReason;
+  lastUserMessageId: string;
+  message: UIMessage;
   userId: string;
-  user?: User | null;
-  roles?: Role[] | null;
-  settings?: UserSettings | null;
-  dataStream: DataStreamWriter;
-  additionalContext?: string | null;
-  bible?: Bible;
-};
+}) {
+  const [response] = await db
+    .insert(messagesTable)
+    .values({
+      id: message.id,
+      chatId: chat.id,
+      content: messageText(message),
+      finishReason,
+      originMessageId: lastUserMessageId,
+      parts: JSONSchema.array().parse(JSON.parse(JSON.stringify(message.parts))),
+      role: message.role,
+      userId,
+    })
+    .returning();
 
-export const createChatChain = async (options: CreateChatChainOptions) => {
+  await persistSourceReferences(response.id, message);
+}
+
+export async function createChatChain(
+  options: CreateChatChainOptions,
+): Promise<ReadableStream<UIMessageChunk>> {
   const pendingPromises: Promise<unknown>[] = [];
-
-  const system = systemPrompt({
+  const instructions = systemPrompt({
     additionalContext: options.additionalContext,
     user: options.user,
     settings: options.settings,
     bible: options.bible,
   });
-  const systemTokens = await numTokensFromString({ text: system });
+  const systemTokens = await numTokensFromString({ text: instructions });
 
-  console.time('getValidMessages');
   const dbMessages = await getValidMessages({
     userId: options.userId,
     chatId: options.chat.id,
-    maxTokens: options.modelInfo.contextSize - systemTokens - maxResponseTokens,
-    mustStartWithUserMessage: options.modelInfo.host === 'anthropic',
+    maxTokens: getChatContextSize() - systemTokens - maxResponseTokens,
   });
-  console.timeEnd('getValidMessages');
-
-  const lastUserMessage = dbMessages.find((m) => m.role === 'user')!;
+  const lastUserMessage = dbMessages.findLast((message) => message.role === 'user');
+  if (!lastUserMessage) throw new Error('No user message found');
 
   if (!options.chat.customName) {
     pendingPromises.push(
@@ -140,112 +266,45 @@ export const createChatChain = async (options: CreateChatChainOptions) => {
   }
 
   const resolvedTools = tools({
-    dataStream: options.dataStream,
     userId: options.userId,
     user: options.user,
     roles: options.roles,
     bibleAbbreviation: options.bible?.abbreviation,
+    christianTradition: options.settings?.christianTradition,
+  });
+  const originalMessages = dbMessages.map(toUIMessage);
+  const result = streamText({
+    abortSignal: options.abortSignal,
+    instructions,
+    maxOutputTokens: maxResponseTokens,
+    messages: await convertToModelMessages(originalMessages, { tools: resolvedTools }),
+    model: getChatModel(),
+    onStepEnd: ({ finishReason }) => options.onStepEnd?.({ finishReason }),
+    stopWhen: isStepCount(5),
+    tools: resolvedTools,
   });
 
-  // TODO: Uncomment this once bun fixes this issue: https://github.com/oven-sh/bun/issues/13072
-  // const model = wrapLanguageModel({
-  //   model: registry.languageModel(options.modelId),
-  //   middleware: cacheMiddleware,
-  // });
-  // @ts-expect-error
-  let model = registry.languageModel(`${options.modelInfo.host}:${options.modelInfo.id}`);
-  if (Resource.Stage.value === 'production') {
-    model = wrapAISDKModel(model);
-  }
-
-  const normalizedMessages = dbMessages.map(normalizeMessage);
-
-  return () =>
-    streamText({
-      ...options,
-      model,
-      system,
-      messages: normalizedMessages,
-      tools: resolvedTools,
-      maxSteps: options.maxSteps ?? 5,
-      experimental_generateMessageId: createId,
-      onFinish: async (event) => {
-        async function onFinish() {
-          const newMessages = appendResponseMessages({
-            messages: normalizedMessages,
-            responseMessages: event.response.messages,
-          }).filter((m) => !normalizedMessages.some((nm) => nm.id === m.id)); // filter out messages that already exist
-
-          for (const message of newMessages) {
-            // Remove deprecated fields
-            const { toolInvocations, data, ...rest } = message;
-            const [response] = await db
-              .insert(messagesTable)
-              .values({
-                ...rest,
-                originMessageId: lastUserMessage.id,
-                userId: options.userId,
-                chatId: options.chat.id,
-              })
-              .returning();
-
-            options.dataStream.writeMessageAnnotation({
-              dbId: response.id,
-            });
-
-            for (const part of message.parts ?? []) {
-              if (part.type === 'tool-invocation') {
-                if (
-                  'result' in part.toolInvocation &&
-                  part.toolInvocation.toolName === 'vectorStore' &&
-                  part.toolInvocation.result.status === 'success'
-                ) {
-                  await db
-                    .insert(messagesToSourceDocuments)
-                    .values(
-                      part.toolInvocation.result.documents.map((d: DocumentWithScore) => ({
-                        messageId: response.id,
-                        sourceDocumentId: d.id,
-                        distance: 1 - d.score,
-                        distanceMetric: 'cosine' as const,
-                      })),
-                    )
-                    // In case there are multiple results with the same document
-                    .onConflictDoNothing();
-
-                  const generateImageToolResult = message.parts?.find(
-                    (p) =>
-                      p.type === 'tool-invocation' && p.toolInvocation.toolName === 'generateImage',
-                  ) as ToolInvocationPart | undefined;
-                  if (
-                    generateImageToolResult &&
-                    'result' in generateImageToolResult.toolInvocation &&
-                    generateImageToolResult.toolInvocation.result.status === 'success'
-                  ) {
-                    const image = generateImageToolResult.toolInvocation.result.image;
-                    options.dataStream.writeMessageAnnotation({
-                      generatedImageId: image.id,
-                    });
-                    await db
-                      .insert(userGeneratedImagesToSourceDocuments)
-                      .values(
-                        part.toolInvocation.result.documents.map((d: DocumentWithScore) => ({
-                          userGeneratedImageId: image.id,
-                          sourceDocumentId: d.id,
-                          distance: 1 - d.score,
-                          distanceMetric: 'cosine' as const,
-                        })),
-                      )
-                      // In case there are multiple results with the same document
-                      .onConflictDoNothing();
-                  }
-                }
-              }
-            }
-          }
-        }
-
-        await Promise.all([...pendingPromises, onFinish(), options.onFinish?.(event)]);
-      },
-    });
-};
+  return toUIMessageStream({
+    generateMessageId: createId,
+    onEnd: async ({ finishReason, isAborted, responseMessage }) => {
+      await Promise.all([
+        ...pendingPromises,
+        persistResponseMessage({
+          chat: options.chat,
+          finishReason,
+          lastUserMessageId: lastUserMessage.id,
+          message: responseMessage,
+          userId: options.userId,
+        }),
+      ]);
+      await options.onEnd?.({ finishReason, isAborted });
+    },
+    onError: (error) => {
+      void options.onError?.(error);
+      return 'An error occurred.';
+    },
+    originalMessages,
+    stream: result.stream,
+    tools: resolvedTools,
+  });
+}

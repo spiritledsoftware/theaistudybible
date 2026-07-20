@@ -9,7 +9,6 @@ import { Button } from '../ui/button';
 import { Textarea } from '../ui/textarea';
 import { RemainingMessages } from './remaining-messages';
 import { ChatScrollButton } from './scroll-button';
-import { SelectModelButton } from './select-model-button';
 
 export type ChatInputProps = {
   input: ReturnType<typeof useChat>['input'];
@@ -78,18 +77,15 @@ export const ChatInput = (props: ChatInputProps) => {
       <div className='relative flex h-fit w-full max-w-3xl flex-col gap-2 rounded-t-lg border border-b-none bg-background/80 px-3 pt-2 pb-4 backdrop-blur-md'>
         {!props.isAtBottom && <ChatScrollButton scrollToBottom={props.scrollToBottom} />}
         <div className='flex flex-1 items-center gap-2'>
-          <SelectModelButton />
-          <div
-            className='flex flex-1 items-center'
-            onKeyDown={(e) => {
-              if (isMobile) return;
-              if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                handleSubmit(e);
-              }
-            }}
-          >
+          <div className='flex flex-1 items-center'>
             <Textarea
+              onKeyDown={(event) => {
+                if (isMobile) return;
+                if (event.key === 'Enter' && !event.shiftKey) {
+                  event.preventDefault();
+                  handleSubmit();
+                }
+              }}
               value={props.input}
               onChange={props.handleInputChange}
               placeholder={props.isLoading ? 'Generating...' : 'Type a message'}

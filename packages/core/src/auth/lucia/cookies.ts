@@ -1,6 +1,6 @@
 import type { Session } from '@/schemas/users/types';
-import { type SerializeOptions, serialize } from 'cookie';
-import { Resource } from 'sst';
+import { env } from '@/core/env';
+import { type SerializeOptions, stringifySetCookie } from 'cookie';
 
 export class SessionCookie {
   constructor(
@@ -10,7 +10,7 @@ export class SessionCookie {
   ) {}
 
   serialize() {
-    return serialize(this.name, this.value, this.attributes);
+    return stringifySetCookie({ name: this.name, value: this.value, ...this.attributes });
   }
 }
 
@@ -22,7 +22,7 @@ export function createSessionCookie(token: string, session: Session): SessionCoo
     expires: session.expiresAt,
     sameSite: 'lax',
     httpOnly: true,
-    secure: Resource.Dev.value !== 'true',
+    secure: env.DEV !== 'true',
   });
 }
 
@@ -32,6 +32,6 @@ export function createBlankSessionCookie(): SessionCookie {
     maxAge: 0,
     sameSite: 'lax',
     httpOnly: true,
-    secure: Resource.Dev.value !== 'true',
+    secure: env.DEV !== 'true',
   });
 }

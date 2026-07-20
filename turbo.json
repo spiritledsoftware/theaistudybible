@@ -6,7 +6,7 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": [".vinxi/**", ".output/**"]
+      "outputs": ["dist/**"]
     },
     "clean": {},
     "dev": {

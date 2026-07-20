@@ -8,7 +8,6 @@ const refine = {
   content: ContentSchema.array(),
 };
 
-// @ts-ignore - Circular dependency
 export const VerseSchema = createSelectSchema(verses, refine);
 
 export const CreateVerseSchema = createInsertSchema(verses, refine).omit({

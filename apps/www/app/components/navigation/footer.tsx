@@ -38,7 +38,7 @@ export const NavigationFooter = () => {
             </Button>
             <Button variant='link' size='sm' asChild>
               <Link
-                to={import.meta.env.PUBLIC_DONATION_LINK}
+                to={import.meta.env.VITE_DONATION_LINK}
                 target='_blank'
                 rel='noopener noreferrer'
               >

@@ -7,10 +7,18 @@
     "type-check": "tsc --noEmit"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^4.20250506.0",
-    "@theaistudybible/tsconfig": "workspace:*"
+    "@cloudflare/workers-types": "^5.20260719.1",
+    "@theaistudybible/tsconfig": "workspace:*",
+    "@types/web-push": "^3.6.4"
   },
   "dependencies": {
-    "@sentry/cloudflare": "^9.15.0"
+    "@aws-sdk/client-ses": "^3.1090.0",
+    "@sentry/cloudflare": "^10.67.0",
+    "@theaistudybible/ai": "workspace:*",
+    "@theaistudybible/email": "workspace:*",
+    "date-fns": "^4.4.0",
+    "drizzle-orm": "^0.45.2",
+    "unpdf": "^1.6.2",
+    "web-push": "^3.6.7"
   }
 }

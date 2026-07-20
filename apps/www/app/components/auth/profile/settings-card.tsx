@@ -1,11 +1,23 @@
+import {
+  getApprovedChristianTraditions,
+  isChristianTraditionApproved,
+} from '@/core/christian-tradition-approvals';
+import { CHRISTIAN_TRADITION_LABELS, type ChristianTradition } from '@/core/christian-traditions';
 import { db } from '@/core/database';
 import { userSettings } from '@/core/database/schema';
 import { UpdateUserSettingsSchema } from '@/schemas/users/settings';
-import { Form, FormControl, FormField, FormItem, FormLabel } from '@/www/components/ui/form';
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+} from '@/www/components/ui/form';
 import { useAuth } from '@/www/hooks/use-auth';
 import { requireAuthMiddleware } from '@/www/server/middleware/auth';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { createServerFn } from '@tanstack/react-start';
 import { eq } from 'drizzle-orm';
 import { useState } from 'react';
@@ -18,11 +30,20 @@ import { Button } from '../../ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../ui/card';
 import { Switch } from '../../ui/switch';
 import { Textarea } from '../../ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../ui/select';
+
+const getAvailableChristianTraditions = createServerFn({ method: 'GET' }).handler(async () => {
+  const approvals = await getApprovedChristianTraditions();
+  return approvals.map((approval) => approval.tradition);
+});
 
 const updateSettings = createServerFn({ method: 'POST' })
   .middleware([requireAuthMiddleware])
   .validator(UpdateUserSettingsSchema)
   .handler(async ({ context, data }) => {
+    if (data.christianTradition && !(await isChristianTraditionApproved(data.christianTradition))) {
+      throw new Error('This Christian Tradition is not currently approved');
+    }
     const { user } = context;
     let settings = await db.query.userSettings.findFirst({
       where: (userSettings, { eq }) => eq(userSettings.userId, user.id),
@@ -44,6 +65,11 @@ const updateSettings = createServerFn({ method: 'POST' })
 
 export function SettingsCard() {
   const { settings, refetch } = useAuth();
+  const approvedTraditions = useQuery({
+    queryKey: ['approved-christian-traditions'],
+    queryFn: () => getAvailableChristianTraditions(),
+    staleTime: 1000 * 60 * 5,
+  });
 
   const form = useForm<z.infer<typeof UpdateUserSettingsSchema>>({
     resolver: zodResolver(UpdateUserSettingsSchema),
@@ -127,10 +153,47 @@ export function SettingsCard() {
                 name='aiInstructions'
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Added AI Instructions</FormLabel>
+                    <FormLabel>Assistant Preferences</FormLabel>
                     <FormControl>
-                      <Textarea {...field} value={field.value ?? undefined} />
+                      <Textarea {...field} maxLength={1_000} value={field.value ?? undefined} />
                     </FormControl>
+                    <FormDescription>
+                      Optional preferences for tone, response length, reading level, and study
+                      goals.
+                    </FormDescription>
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name='christianTradition'
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Christian Tradition</FormLabel>
+                    <Select
+                      value={field.value ?? 'NONE'}
+                      onValueChange={(value) =>
+                        field.onChange(value === 'NONE' ? null : (value as ChristianTradition))
+                      }
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder='No preference' />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value='NONE'>No preference</SelectItem>
+                        {(approvedTraditions.data ?? []).map((tradition) => (
+                          <SelectItem key={tradition} value={tradition}>
+                            {CHRISTIAN_TRADITION_LABELS[tradition]}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormDescription>
+                      Optional. Saving this preference stores it with your Account and frames
+                      disputed theological questions. It is never inferred or sent to analytics.
+                    </FormDescription>
                   </FormItem>
                 )}
               />

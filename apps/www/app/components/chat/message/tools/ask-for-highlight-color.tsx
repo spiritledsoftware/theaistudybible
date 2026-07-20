@@ -4,9 +4,9 @@ import { Button } from '@/www/components/ui/button';
 import { ToggleGroup } from '@/www/components/ui/toggle-group';
 import { H5 } from '@/www/components/ui/typography';
 import type { useChat } from '@/www/hooks/use-chat';
-import type { ToolInvocation } from 'ai';
 import { Palette } from 'lucide-react';
 import { useState } from 'react';
+import type { ToolInvocation } from '.';
 
 export type AskForHighlightColorToolProps = {
   toolInvocation: ToolInvocation;
@@ -17,13 +17,12 @@ export const AskForHighlightColorTool = (props: AskForHighlightColorToolProps) =
   const [tgValue, setTgValue] = useState<string | undefined>();
 
   // Check if result exists in toolInvocation
-  const result =
-    'result' in props.toolInvocation
-      ? (props.toolInvocation.result as {
-          status: 'canceled' | 'confirmed';
-          color?: string;
-        })
-      : null;
+  const result = props.toolInvocation.result as
+    | {
+        status: 'canceled' | 'confirmed';
+        color?: string;
+      }
+    | undefined;
 
   return (
     <div className='flex w-full flex-col'>
@@ -52,8 +51,9 @@ export const AskForHighlightColorTool = (props: AskForHighlightColorToolProps) =
               variant='outline'
               onClick={() =>
                 props.addToolResult({
+                  tool: 'askForHighlightColor',
                   toolCallId: props.toolInvocation.toolCallId,
-                  result: {
+                  output: {
                     status: 'canceled',
                   },
                 })
@@ -64,8 +64,9 @@ export const AskForHighlightColorTool = (props: AskForHighlightColorToolProps) =
             <Button
               onClick={() =>
                 props.addToolResult({
+                  tool: 'askForHighlightColor',
                   toolCallId: props.toolInvocation.toolCallId,
-                  result: {
+                  output: {
                     status: 'confirmed',
                     color: tgValue || undefined,
                   },

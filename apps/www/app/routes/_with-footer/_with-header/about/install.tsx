@@ -5,7 +5,7 @@ import { Spinner } from '@/www/components/ui/spinner';
 import { GradientH1, ListItem, OrderedList, P, Strong } from '@/www/components/ui/typography';
 import { cn } from '@/www/lib/utils';
 import { createFileRoute } from '@tanstack/react-router';
-import { Chrome, EllipsisVertical, Globe, HousePlus, MonitorUp, Plus, Share } from 'lucide-react';
+import { EllipsisVertical, Globe, HousePlus, MonitorUp, Plus, Share } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 
 export const Route = createFileRoute('/_with-footer/_with-header/about/install')({
@@ -95,7 +95,7 @@ function RouteComponent() {
 
             {isAndroid && isChrome && (
               <InstallInstructions
-                icon={<Chrome className='mr-2 inline-block size-6' />}
+                icon={<Globe className='mr-2 inline-block size-6' />}
                 steps={[
                   <ListItem key='1'>
                     Tap the menu icon (
@@ -113,7 +113,7 @@ function RouteComponent() {
 
             {isChrome && (isMac || isWindows) && (
               <InstallInstructions
-                icon={<Chrome className='mr-2 inline-block size-6' />}
+                icon={<Globe className='mr-2 inline-block size-6' />}
                 steps={[
                   <ListItem key='1'>
                     Click the install icon in the address bar (

@@ -167,7 +167,7 @@ export const NotesCard = () => {
                     ) : (
                       notes.map((note, idx) => (
                         <NoteItemCard
-                          key={`${note.bibleAbbreviation}-${'verse' in note ? note.verse.code : note.chapter.code}-${idx}`}
+                          key={note.id}
                           data-index={idx}
                           note={note}
                           bible={'verse' in note ? note.verse.bible : note.chapter.bible}

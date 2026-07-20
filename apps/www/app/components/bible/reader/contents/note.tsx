@@ -6,8 +6,7 @@ import { Contents } from './index';
 
 export type NoteContentProps = {
   content: NoteContentType;
-  // biome-ignore lint/suspicious/noExplicitAny: <explanation>
-  props: any;
+  props: Record<string, string>;
 };
 
 export function NoteContent({ content, props }: NoteContentProps) {

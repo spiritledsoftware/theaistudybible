@@ -1,3 +1,4 @@
+import { env } from '@/core/env';
 import {
   type WebAuthnUserCredential,
   createPasskeyCredential,
@@ -27,7 +28,6 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { createServerFn } from '@tanstack/react-start';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { Resource } from 'sst';
 import { z } from 'zod';
 import { Button } from '../../ui/button';
 import {
@@ -100,7 +100,7 @@ const createPasskey = createServerFn({ method: 'POST' })
     if (attestationStatement.format !== AttestationStatementFormat.None) {
       throw new Error('Invalid attestation statement format');
     }
-    if (!authenticatorData.verifyRelyingPartyIdHash(new URL(Resource.WebAppUrl.value).hostname)) {
+    if (!authenticatorData.verifyRelyingPartyIdHash(new URL(env.WEB_APP_URL).hostname)) {
       throw new Error('Invalid relying party ID hash');
     }
     if (!authenticatorData.userPresent || !authenticatorData.userVerified) {
@@ -118,7 +118,7 @@ const createPasskey = createServerFn({ method: 'POST' })
     if (!(await verifyWebAuthnChallenge(clientData.challenge))) {
       throw new Error('Invalid challenge');
     }
-    if (clientData.origin !== Resource.WebAppUrl.value) {
+    if (clientData.origin !== env.WEB_APP_URL) {
       throw new Error('Invalid origin');
     }
     if (clientData.crossOrigin !== null && clientData.crossOrigin) {
