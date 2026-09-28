@@ -21,8 +21,9 @@ describe('Home Page', () => {
     cy.url().should('include', '/bible');
   });
 
-  it('navigates to the Pro page from "Try Pro Free"', () => {
+  it('sends signed-out readers from "Try Pro Free" to sign in first', () => {
     cy.contains('a', 'Try Pro Free').click();
-    cy.url().should('include', '/pro');
+    cy.location('pathname').should('eq', '/sign-in');
+    cy.location('search').should('include', 'redirectUrl=%2Fpro');
   });
 });
