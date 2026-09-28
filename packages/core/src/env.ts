@@ -35,7 +35,6 @@ export type QuotaLimiterNamespace = {
 export type RuntimeEnv = {
   AI_CONTEXT_SIZE: string;
   APPLE_CLIENT_ID: string;
-  APPLE_CLIENT_SECRET: string;
   APPLE_AUTH_KEY: string;
   APPLE_KEY_ID: string;
   APPLE_TEAM_ID: string;
@@ -46,6 +45,8 @@ export type RuntimeEnv = {
   DEAD_LETTER_QUEUE: Queue;
   DEV: string;
   DEVOTIONAL_QUEUE: Queue;
+  /** Cloudflare Email Service `send_email` binding, restricted to noreply@theaistudybible.com. */
+  EMAIL: SendEmail;
   EMAIL_QUEUE: Queue;
   GOOGLE_CLIENT_ID: string;
   GOOGLE_CLIENT_SECRET: string;
@@ -72,8 +73,6 @@ export type RuntimeEnv = {
   PUBLIC_MEDIA_URL: string;
   QUOTA_LIMITER: QuotaLimiterNamespace;
   SCRIPTURE_INDEX: VectorizeIndex;
-  SES_ACCESS_KEY_ID: string;
-  SES_SECRET_ACCESS_KEY: string;
   SENTRY_DSN: string;
   STAGE: string;
   STRIPE_SECRET_KEY: string;

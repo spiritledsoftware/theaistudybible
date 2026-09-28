@@ -36,7 +36,7 @@ const worker: ExportedHandler<WebhookEnv> = {
 
     let event: Stripe.Event;
     try {
-      event = stripe.webhooks.constructEvent(
+      event = await stripe.webhooks.constructEventAsync(
         await request.text(),
         signature,
         env.STRIPE_WEBHOOK_SECRET,

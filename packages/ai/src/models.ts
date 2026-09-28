@@ -8,7 +8,8 @@ function requireConfiguration(
     | 'AI_CONTEXT_SIZE'
     | 'OPENROUTER_CHAT_MODEL'
     | 'OPENROUTER_EMBEDDING_MODEL'
-    | 'OPENROUTER_IMAGE_MODEL',
+    | 'OPENROUTER_IMAGE_MODEL'
+    | 'OPENROUTER_EMBEDDING_DIMENSIONS',
 ) {
   const value = env[key];
   if (!value) throw new Error(`Missing required AI configuration: ${key}`);
@@ -36,6 +37,15 @@ export function getChatContextSize() {
   const value = Number(requireConfiguration('AI_CONTEXT_SIZE'));
   if (!Number.isSafeInteger(value) || value <= 0) {
     throw new Error('AI_CONTEXT_SIZE must be a positive integer');
+  }
+  return value;
+}
+
+/** Must equal the Vectorize index dimension, which Alchemy creates from the same setting. */
+export function getEmbeddingDimensions() {
+  const value = Number(requireConfiguration('OPENROUTER_EMBEDDING_DIMENSIONS'));
+  if (!Number.isSafeInteger(value) || value <= 0) {
+    throw new Error('OPENROUTER_EMBEDDING_DIMENSIONS must be a positive integer');
   }
   return value;
 }

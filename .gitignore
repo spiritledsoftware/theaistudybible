@@ -17,10 +17,6 @@ node_modules
 # Wrangler build state
 **/.wrangler/
 
-# Local LibSQL DB
-.libsql.db*
-dump.sql
-
 # SSH key
 *key_rsa
 

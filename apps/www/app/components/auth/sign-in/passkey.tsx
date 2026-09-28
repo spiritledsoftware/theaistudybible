@@ -129,7 +129,7 @@ export const PasskeyButton = (props: PasskeyButtonProps) => {
 
       const credential = await navigator.credentials.get({
         publicKey: {
-          challenge: decodeBase64(challenge),
+          challenge: new Uint8Array(decodeBase64(challenge)),
           userVerification: 'required',
         },
       });

@@ -7,15 +7,10 @@
     "build": "turbo run build",
     "clean-install": "rimraf pnpm-lock.yaml --glob '**/node_modules' && pnpm cache delete && pnpm install --recursive",
     "clean": "turbo run clean",
-    "cy:open:prod": "cypress open",
     "cy:open": "cypress open",
     "db:generate": "drizzle-kit generate",
-    "db:migrate:prod": "drizzle-kit migrate",
-    "db:migrate": "drizzle-kit migrate",
     "db:seed:prod": "tsx ./tools/scripts/src/index.ts db seed",
     "db:seed": "tsx ./tools/scripts/src/index.ts db seed",
-    "db:studio:prod": "drizzle-kit studio",
-    "db:studio": "drizzle-kit studio",
     "deploy": "alchemy deploy alchemy.run.ts --stage production",
     "dev": "alchemy dev alchemy.run.ts",
     "format:check": "biome format .",
@@ -28,7 +23,6 @@
     "remove": "alchemy destroy alchemy.run.ts",
     "scripts:prod": "tsx ./tools/scripts/src/index.ts",
     "scripts": "tsx ./tools/scripts/src/index.ts",
-    "test:e2e:prod": "cypress run",
     "test:e2e": "cypress run",
     "test": "vitest run",
     "type-check": "turbo run type-check",
@@ -54,7 +48,6 @@
     "wrangler": "^4.112.0"
   },
   "dependencies": {
-    "@aws-sdk/client-ses": "^3.1090.0",
     "ai": "^7.0.31",
     "date-fns": "^4.4.0",
     "drizzle-orm": "^0.45.2",
@@ -62,6 +55,9 @@
     "stripe": "^22.3.2",
     "web-push": "^3.6.7",
     "zod": "^4.4.3"
+  },
+  "engines": {
+    "node": ">=22.13 <26"
   },
   "packageManager": "pnpm@11.15.1"
 }

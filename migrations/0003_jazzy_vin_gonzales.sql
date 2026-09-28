@@ -1,1 +1,0 @@
-ALTER TABLE `user_credits` ADD `last_sign_in_credit_at` text;

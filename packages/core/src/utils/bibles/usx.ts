@@ -6,7 +6,14 @@ import type {
   OwningContent,
   ParaContent,
 } from '@/schemas/bibles/contents';
-import { JSDOM } from 'jsdom';
+import {
+  DOMParser,
+  type Element,
+  MIME_TYPE,
+  type Node,
+  type NodeList,
+  onErrorStopParsing,
+} from '@xmldom/xmldom';
 
 export const ignoredElements = [
   'book', // Book marker meaningless since books served separately
@@ -37,10 +44,14 @@ export type ParserState = {
 };
 
 export function parseUsx(xmlString: string) {
-  const doc = new JSDOM(xmlString, {
-    contentType: 'application/xml',
-  });
-  const usx = doc.window.document.documentElement;
+  const doc = new DOMParser({ onError: onErrorStopParsing }).parseFromString(
+    xmlString,
+    MIME_TYPE.XML_APPLICATION,
+  );
+  const usx = doc.documentElement;
+  if (!usx) {
+    throw new Error('Invalid USX document');
+  }
 
   if (usx.nodeName !== 'usx' || usx.nodeType !== usx.ELEMENT_NODE) {
     throw new Error('Invalid USX document');
@@ -111,7 +122,7 @@ export function parseUsx(xmlString: string) {
   return state.contents;
 }
 
-export function parseContents(state: ParserState, nodes: NodeListOf<ChildNode>) {
+export function parseContents(state: ParserState, nodes: NodeList<Node>) {
   for (const node of Array.from(nodes)) {
     if (node.nodeType === 3) {
       if (state.chapterNumber === undefined) {

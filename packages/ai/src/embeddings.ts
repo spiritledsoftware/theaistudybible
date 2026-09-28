@@ -1,5 +1,5 @@
 import { embed, embedMany, type EmbeddingModel } from 'ai';
-import { getEmbeddingModel } from './models';
+import { getEmbeddingDimensions, getEmbeddingModel } from './models';
 import type { Document, DocumentWithEmbedding } from './types/document';
 
 export class Embeddings {
@@ -20,6 +20,7 @@ export class Embeddings {
       value: query,
     });
 
+    assertEmbeddingDimensions([response.embedding]);
     return response.embedding;
   }
 
@@ -34,6 +35,7 @@ export class Embeddings {
         values: chunk.map((document) => document.content),
       });
 
+      assertEmbeddingDimensions(embeddings);
       result = result.concat(
         embeddings.map((d, index) => ({
           ...chunk[index],
@@ -42,6 +44,16 @@ export class Embeddings {
       );
     }
     return result;
+  }
+}
+
+function assertEmbeddingDimensions(vectors: number[][]) {
+  const expected = getEmbeddingDimensions();
+  const mismatch = vectors.find((vector) => vector.length !== expected);
+  if (mismatch) {
+    throw new Error(
+      `Embedding model returned ${mismatch.length} dimensions; the scripture index expects ${expected}`,
+    );
   }
 }
 

@@ -202,11 +202,11 @@ export function PasskeysCard() {
 
       const credential = await navigator.credentials.create({
         publicKey: {
-          challenge: decodeBase64(challenge),
+          challenge: new Uint8Array(decodeBase64(challenge)),
           user: {
             displayName: user?.email || '',
             name: user?.email || '',
-            id: decodeBase64(credentialsId),
+            id: new Uint8Array(decodeBase64(credentialsId)),
           },
           rp: {
             name: 'The AI Study Bible',

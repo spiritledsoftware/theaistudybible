@@ -12,7 +12,6 @@
     "@types/web-push": "^3.6.4"
   },
   "dependencies": {
-    "@aws-sdk/client-ses": "^3.1090.0",
     "@sentry/cloudflare": "^10.67.0",
     "@theaistudybible/ai": "workspace:*",
     "@theaistudybible/email": "workspace:*",

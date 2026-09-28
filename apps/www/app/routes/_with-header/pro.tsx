@@ -3,6 +3,7 @@ import { users } from '@/core/database/schema';
 import { env } from '@/core/env';
 import { stripe } from '@/core/stripe';
 import { syncStripeData } from '@/core/stripe/utils';
+import { getConfiguredDailyQuota } from '@/core/utils/quota';
 import { QueryBoundary } from '@/www/components/query-boundary';
 import { Badge } from '@/www/components/ui/badge';
 import { Button } from '@/www/components/ui/button';
@@ -28,7 +29,7 @@ export const Route = createFileRoute('/_with-header/pro')({
   head: () => {
     const title = 'Pro | The AI Study Bible';
     const description =
-      'Get access to premium features and content, including AI-powered insights, verse explanations, and more. Sign up for a Pro subscription today.';
+      'Pro raises your daily Scripture Assistant and image limits. Every plan uses the same scripture-grounded assistant.';
 
     return {
       meta: [
@@ -79,9 +80,11 @@ const getProducts = createServerFn({ method: 'GET' }).handler(async () => {
       {
         id: product.id,
         name: product.name,
-        features: product.marketing_features
-          .map(({ name }) => name)
-          .filter((name): name is string => typeof name === 'string'),
+        features: [
+          `${getConfiguredDailyQuota('PRO_CHAT_DAILY_LIMIT')} Scripture Assistant messages per day`,
+          `${getConfiguredDailyQuota('PRO_IMAGE_DAILY_LIMIT')} generated images per day`,
+          'The same Scripture Assistant as the free plan',
+        ],
         prices: [
           {
             currency: monthlyPrice.currency,
@@ -193,8 +196,8 @@ function RouteComponent() {
               Choose Your Plan
             </GradientH1>
             <Lead className='max-w-2xl text-center text-muted-foreground'>
-              Unlock the full potential of AI-powered Bible study with advanced features, higher
-              usage limits, and priority support
+              The same scripture-grounded assistant on every plan. Pro raises your daily usage
+              limits.
             </Lead>
           </div>
 

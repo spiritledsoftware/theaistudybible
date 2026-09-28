@@ -2,7 +2,7 @@
 
 Replace SST and the Fly-hosted web runtime with Alchemy-managed Cloudflare infrastructure. Move the web app, functions, queues, object storage/CDN, and scheduled jobs to Cloudflare-native runtime services; retain external SaaS services only where Cloudflare has no safe functional equivalent. This avoids leaving the application split across two infrastructure control planes.
 
-Amazon SES remains the outbound email provider because replacing a proven transactional-delivery service during the runtime migration would add deliverability risk without improving application parity. Cloudflare Workers will access SES with narrowly scoped credentials; no application compute remains on AWS.
+Amazon SES remains the outbound email provider because replacing a proven transactional-delivery service during the runtime migration would add deliverability risk without improving application parity. Cloudflare Workers will access SES with narrowly scoped credentials; no application compute remains on AWS. Superseded in part by [0015](0015-cloudflare-email-service.md): outbound email now uses Cloudflare Email Service.
 
 Move relational data from Turso/libSQL to Cloudflare D1. The fresh production reset removes data-migration risk, while D1 gives the Workers runtime and Alchemy-managed preview environments a native, credential-free SQLite database.
 

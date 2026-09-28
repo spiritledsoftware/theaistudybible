@@ -1,0 +1,3 @@
+[tools]
+# Matches CI. Alchemy 0.93's Cloudflare client cannot read gzip responses on Node 26.
+node = "22"

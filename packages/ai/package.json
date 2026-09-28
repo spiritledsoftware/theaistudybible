@@ -14,6 +14,6 @@
     "@openrouter/ai-sdk-provider": "^3.0.0",
     "@theaistudybible/core": "workspace:*",
     "@theaistudybible/schemas": "workspace:*",
-    "tiktoken": "^1.0.22"
+    "js-tiktoken": "^1.0.21"
   }
 }

@@ -180,11 +180,11 @@ export function PasskeyForm(props: PasskeyFormProps) {
 
       const credential = await navigator.credentials.create({
         publicKey: {
-          challenge: decodeBase64(challenge),
+          challenge: new Uint8Array(decodeBase64(challenge)),
           user: {
             displayName: email,
             name: email,
-            id: decodeBase64(credentialsId),
+            id: new Uint8Array(decodeBase64(credentialsId)),
           },
           rp: {
             name: 'The AI Study Bible',

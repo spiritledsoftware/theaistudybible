@@ -1,23 +1,26 @@
-name: Deploy PR preview
+name: Deploy
 
 on:
-  pull_request:
+  push:
     branches: [main]
     paths-ignore:
       - 'README.md'
       - '.vscode/**'
       - '.cursor/**'
       - '.husky/**'
+  workflow_dispatch:
 
 permissions:
   contents: read
-  pull-requests: write
 
+# One pipeline at a time: staging and production deploys never overlap, and a
+# queued run waits for the in-flight production deploy instead of cancelling it.
 concurrency:
-  group: pr-${{ github.event.pull_request.number }}
-  cancel-in-progress: true
+  group: deploy
+  cancel-in-progress: false
 
-# Every value is a secret of the `preview` GitHub Environment.
+# Every value is a GitHub Environment secret. Only the `staging` and
+# `production` jobs bind an environment, so only they resolve these values.
 env:
   AI_CONTEXT_SIZE: ${{ secrets.AI_CONTEXT_SIZE }}
   ALCHEMY_PASSWORD: ${{ secrets.ALCHEMY_PASSWORD }}
@@ -51,16 +54,11 @@ env:
   VAPID_PUBLIC_KEY: ${{ secrets.VAPID_PUBLIC_KEY }}
 
 jobs:
-  deploy:
-    name: Verify and deploy preview
-    if: github.event.pull_request.head.repo.full_name == github.repository
+  verify:
+    name: Verify
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    timeout-minutes: 45
-    environment:
-      name: preview
-      url: ${{ env.PREVIEW_URL }}
-    env:
-      PREVIEW_URL: https://pr-${{ github.event.pull_request.number }}.preview.theaistudybible.com
+    timeout-minutes: 20
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -80,42 +78,56 @@ jobs:
       - name: Test
         run: pnpm run test
 
-      - name: Deploy Cloudflare preview
-        run: pnpm exec alchemy deploy alchemy.run.ts --stage pr-${{ github.event.pull_request.number }}
+  staging:
+    name: Deploy staging
+    needs: verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    environment:
+      name: staging
+      url: https://staging.theaistudybible.com
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - name: Run preview smoke tests
+      - name: CI setup
+        uses: ./.github/actions/ci-setup
+
+      - name: Deploy Cloudflare staging
+        run: pnpm exec alchemy deploy alchemy.run.ts --stage staging
+
+      - name: Run staging smoke tests
         env:
-          WEB_APP_URL: ${{ env.PREVIEW_URL }}
+          WEB_APP_URL: https://staging.theaistudybible.com
           ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
           ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
           TEST_USER_EMAIL: ${{ secrets.TEST_USER_EMAIL }}
           TEST_USER_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
         run: pnpm run test:e2e
 
-      - name: Publish preview URL
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const marker = '<!-- theaistudybible-preview -->';
-            const body = `${marker}\nPreview URL: ${process.env.PREVIEW_URL}`;
-            const { data: comments } = await github.rest.issues.listComments({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number,
-            });
-            const existing = comments.find((comment) => comment.body?.includes(marker));
-            if (existing) {
-              await github.rest.issues.updateComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                comment_id: existing.id,
-                body,
-              });
-            } else {
-              await github.rest.issues.createComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: context.issue.number,
-                body,
-              });
-            }
+  production:
+    name: Deploy production
+    needs: staging
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    environment:
+      name: production
+      url: https://theaistudybible.com
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: CI setup
+        uses: ./.github/actions/ci-setup
+
+      - name: Deploy Cloudflare production
+        run: pnpm run deploy
+
+      - name: Run production smoke tests
+        env:
+          WEB_APP_URL: https://theaistudybible.com
+          ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
+          ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+          TEST_USER_EMAIL: ${{ secrets.TEST_USER_EMAIL }}
+          TEST_USER_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
+        run: pnpm run test:e2e

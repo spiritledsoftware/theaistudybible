@@ -27,7 +27,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         { name: 'viewport', content: 'width=device-width, initial-scale=1' },
         { title: 'The AI Study Bible' },
       ],
-      links: [{ rel: 'stylesheet', href: appCss }],
+      links: [
+        { rel: 'stylesheet', href: appCss },
+        { rel: 'manifest', href: '/manifest.webmanifest' },
+      ],
     };
   },
   component: RootComponent,

@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import { existsSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -5,17 +6,43 @@ import alchemy from 'alchemy/cloudflare/tanstack-start';
 import tailwindcss from '@tailwindcss/vite';
 import { tanstackStart } from '@tanstack/react-start/plugin/vite';
 import viteReact from '@vitejs/plugin-react';
-import { defineConfig } from 'vite';
+import { type Plugin, defineConfig } from 'vite';
 import { analyzer } from 'vite-bundle-analyzer';
-import { VitePWA } from 'vite-plugin-pwa';
-import wasm from 'vite-plugin-wasm';
+import { VitePWA, type VitePWAOptions } from 'vite-plugin-pwa';
 
 const directory = path.dirname(fileURLToPath(import.meta.url));
-const buildRevision = process.env.GITHUB_SHA ?? 'development';
+// The SSR shell is precached under "/", so its revision must change on every build.
+const buildRevision = process.env.GITHUB_SHA ?? randomUUID();
 const generatedConfigPath = path.resolve(directory, '.alchemy/local/wrangler.jsonc');
 const configPath = existsSync(generatedConfigPath)
   ? generatedConfigPath
   : path.resolve(directory, 'wrangler.build.jsonc');
+
+// vite-plugin-pwa predates Vite environments: it reads the top-level resolved config, which the
+// Cloudflare plugin points at the worker (SSR) build, so it skips the service worker and writes the
+// manifest into dist/server. Hand it the client build options and emit its files only from the
+// client build; its virtual modules still resolve everywhere because SSR renders the registrar.
+function clientPWA(options: Partial<VitePWAOptions>): Plugin[] {
+  return VitePWA(options).map((plugin) => {
+    const { configResolved } = plugin;
+    return {
+      ...plugin,
+      applyToEnvironment:
+        plugin.name === 'vite-plugin-pwa:build'
+          ? (environment) => environment.name === 'client'
+          : undefined,
+      configResolved:
+        typeof configResolved === 'function'
+          ? function (config) {
+              return configResolved.call(this, {
+                ...config,
+                build: config.environments.client?.build ?? config.build,
+              });
+            }
+          : configResolved,
+    };
+  });
+}
 
 export default defineConfig({
   envPrefix: 'VITE_',
@@ -24,8 +51,7 @@ export default defineConfig({
     tanstackStart({ srcDirectory: 'app' }),
     viteReact(),
     tailwindcss(),
-    wasm(),
-    VitePWA({
+    clientPWA({
       strategies: 'injectManifest',
       registerType: 'autoUpdate',
       srcDir: 'app',

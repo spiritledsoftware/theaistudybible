@@ -28,7 +28,7 @@ function RouteComponent() {
       <header className='text-center'>
         <GradientH1>Terms of Service</GradientH1>
         <Muted>
-          Last updated: {formatDate(new Date('2024-10-21T10:00:00-04:00'), 'MMMM d, yyyy')}
+          Last updated: {formatDate(new Date('2026-09-28T10:00:00-04:00'), 'MMMM d, yyyy')}
         </Muted>
       </header>
 
@@ -122,8 +122,8 @@ function RouteComponent() {
           <P>
             Any dispute arising from these Terms or your use of the Service shall be resolved
             through binding arbitration in accordance with the American Arbitration Association's
-            rules. The arbitration shall be conducted in [Your State], and the arbitrator's decision
-            shall be final and binding.
+            rules. The arbitration shall be conducted in the State of Florida, and the arbitrator's
+            decision shall be final and binding.
           </P>
         </section>
 
@@ -131,7 +131,7 @@ function RouteComponent() {
           <H2 className='mb-4'>10. Governing Law</H2>
           <P>
             These Terms shall be governed by and construed in accordance with the laws of the State
-            of [Your State], without regard to its conflict of law provisions.
+            of Florida, without regard to its conflict of law provisions.
           </P>
         </section>
 

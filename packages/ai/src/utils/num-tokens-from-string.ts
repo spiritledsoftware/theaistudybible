@@ -1,29 +1,16 @@
-import { Tiktoken } from 'tiktoken/lite';
-import { load } from 'tiktoken/lite/load';
+import { Tiktoken } from 'js-tiktoken/lite';
 
-export const numTokensFromString = async (options: {
-  model?: string;
-  encoding?: Tiktoken;
-  text: string;
-}) => {
-  let encoding = options.encoding;
-  if (!encoding && options.model) {
-    const { default: registry } = await import('tiktoken/registry.json');
-    const { default: models } = await import('tiktoken/model_to_encoding.json');
-    // @ts-expect-error
-    const registryModel = registry[models[options.model]];
-    if (registryModel) {
-      const model = await load(registryModel);
-      encoding = new Tiktoken(model.bpe_ranks, model.special_tokens, model.pat_str);
-    }
-  }
+let encoderPromise: Promise<Tiktoken> | undefined;
 
-  if (!encoding) {
-    const cl100k_base = await import('tiktoken/encoders/cl100k_base.json');
-    encoding = new Tiktoken(cl100k_base.bpe_ranks, cl100k_base.special_tokens, cl100k_base.pat_str);
-  }
+// Pure-JS tokenizer: the wasm `tiktoken` package relies on ESM wasm integration, which workerd lacks.
+function getEncoder() {
+  encoderPromise ??= import('js-tiktoken/ranks/cl100k_base').then(
+    ({ default: ranks }) => new Tiktoken(ranks),
+  );
+  return encoderPromise;
+}
 
-  const length = encoding.encode(options.text).length;
-  encoding.free();
-  return length;
+export const numTokensFromString = async (options: { text: string }) => {
+  const encoder = await getEncoder();
+  return encoder.encode(options.text).length;
 };

@@ -1,44 +1,28 @@
 {
-  "search.exclude": {
-    "**/.sst": true
-  },
   "files.associations": {
     "**/www/**/*.css": "tailwindcss"
   },
   "cSpell.words": [
     "autocorrect",
     "autofocus",
-    "Autoscaler",
-    "brotli",
     "deepseek",
     "Devo",
-    "dockerbuild",
-    "flyio",
-    "Groq",
-    "Hnsw",
     "libsql",
-    "mistralai",
-    "Mixtral",
     "NKJV",
     "ohash",
-    "openai",
     "Posthog",
     "precache",
-    "pulumi",
     "Ratelimit",
     "rerank",
     "reranked",
     "reranker",
     "Ruleset",
-    "solidrouter",
-    "solidstart",
     "strongs",
     "tailwindcss",
     "TASB",
     "theaistudybible",
     "turso",
-    "upstash",
-    "vinxi"
+    "upstash"
   ],
   "editor.codeActionsOnSave": {
     "quickfix.biome": "explicit",

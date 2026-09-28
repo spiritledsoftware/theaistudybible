@@ -1,6 +1,8 @@
 {
   "extends": "./tools/tsconfig/tsconfig.json",
   "compilerOptions": {
+    // alchemy.run.ts runs under Node's type stripping, which needs explicit .ts specifiers.
+    "allowImportingTsExtensions": true,
     "types": ["cypress", "cypress-wait-until"],
     "paths": {
       "@/core": ["./packages/core/src"],
@@ -17,6 +19,6 @@
       "@/scripts/*": ["./tools/scripts/src/*"]
     }
   },
-  "include": ["alchemy.run.ts", "drizzle.config.ts"],
+  "include": ["alchemy.run.ts", "drizzle.config.ts", "infra"],
   "exclude": ["node_modules", "apps", "packages", "tools"]
 }

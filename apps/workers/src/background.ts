@@ -1,8 +1,13 @@
 import { generateDevotion } from '@/ai/devotion';
 import { lucia } from '@/core/auth/lucia';
 import { db } from '@/core/database';
-import { pushSubscriptions, queueDeliveries } from '@/core/database/schema';
-import { ses } from '@/core/email';
+import {
+  pushSubscriptions,
+  queueDeliveries,
+  roles,
+  users,
+  usersToRoles,
+} from '@/core/database/schema';
 import { env, type RuntimeEnv } from '@/core/env';
 import { createBibleFromDblZip } from '@/core/utils/bibles/create-from-dbl-zip';
 import { insertChapter, insertVerses } from '@/core/utils/bibles/index-chapter';
@@ -14,7 +19,6 @@ import { EmailQueueRecordSchema } from '@/email/schemas';
 import { getEmailHtml } from '@/email/utils/render';
 import { getEmailDeliveryId } from '@/email/idempotency';
 import { ContentSchema } from '@/schemas/bibles/contents';
-import { SendEmailCommand } from '@aws-sdk/client-ses';
 import * as Sentry from '@sentry/cloudflare';
 import { formatDate } from 'date-fns';
 import { eq, lt } from 'drizzle-orm';
@@ -22,7 +26,11 @@ import webPush, { WebPushError } from 'web-push';
 import { z } from 'zod';
 import { AppCache } from './app-cache';
 import { syncGroundingSource } from './grounding-source';
+import { buildDeadLetterEmailBody } from './dead-letter';
 import { QuotaLimiter } from './quota-limiter';
+
+const EMAIL_SENDER = { email: 'noreply@theaistudybible.com', name: 'The AI Study Bible' };
+const EMAIL_REPLY_TO = 'info@theaistudybible.com';
 
 export { AppCache, QuotaLimiter };
 
@@ -80,21 +88,66 @@ async function runIdempotentQueueEffect(
 async function sendEmail(input: unknown) {
   const record = EmailQueueRecordSchema.parse(input);
   const html = await getEmailHtml(record.body);
-  await ses.send(
-    new SendEmailCommand({
-      Source: '"The AI Study Bible" <noreply@theaistudybible.com>',
-      Destination: {
-        ToAddresses: record.to,
-        CcAddresses: record.cc,
-        BccAddresses: record.bcc,
+  await env.EMAIL.send({
+    from: EMAIL_SENDER,
+    replyTo: EMAIL_REPLY_TO,
+    to: record.to,
+    cc: record.cc,
+    bcc: record.bcc,
+    subject: record.subject,
+    html,
+  });
+}
+
+async function getAdminEmails() {
+  const admins = await db
+    .select({ email: users.email })
+    .from(users)
+    .innerJoin(usersToRoles, eq(usersToRoles.userId, users.id))
+    .innerJoin(roles, eq(roles.id, usersToRoles.roleId))
+    .where(eq(roles.id, 'admin'));
+  return [...new Set(admins.map((admin) => admin.email))];
+}
+
+/**
+ * Reports dead-lettered messages to Sentry and emails one metadata-only summary
+ * to admins directly (never via the email queue, which could loop back here).
+ * Always acks: a failed summary must not cause endless redelivery.
+ */
+async function handleDeadLetterBatch(batch: MessageBatch) {
+  for (const message of batch.messages) {
+    Sentry.captureMessage('Queue message dead-lettered', {
+      level: 'error',
+      tags: { queue: batch.queue },
+      extra: {
+        messageId: message.id,
+        attempts: message.attempts,
+        enqueuedAt: message.timestamp.toISOString(),
       },
-      Message: {
-        Subject: { Charset: 'UTF-8', Data: record.subject },
-        Body: { Html: { Charset: 'UTF-8', Data: html } },
-      },
-      ReplyToAddresses: ['info@theaistudybible.com'],
-    }),
-  );
+    });
+  }
+
+  try {
+    const recipients = await getAdminEmails();
+    if (recipients.length > 0) {
+      const html = await getEmailHtml(buildDeadLetterEmailBody(batch.queue, batch.messages));
+      await env.EMAIL.send({
+        from: EMAIL_SENDER,
+        to: recipients,
+        subject: `Dead-letter queue: ${batch.messages.length} message(s) on ${env.STAGE}`,
+        html,
+      });
+    }
+  } catch (error) {
+    // Report only the error code: provider messages may echo recipient addresses.
+    const code = error instanceof Error && 'code' in error ? String(error.code) : 'unknown';
+    Sentry.captureException(new Error(`Dead-letter summary email failed (${code})`), {
+      tags: { queue: batch.queue },
+      extra: { messageIds: batch.messages.map((message) => message.id) },
+    });
+  }
+
+  batch.ackAll();
 }
 
 async function processBibleMessage(input: unknown) {
@@ -261,6 +314,11 @@ async function withLease(name: string, durationMs: number, task: () => Promise<v
 
 const worker: ExportedHandler<RuntimeEnv> = {
   async queue(batch) {
+    // Matched first so no other queue-name substring check can capture it.
+    if (batch.queue.includes('dead-letter')) {
+      await handleDeadLetterBatch(batch);
+      return;
+    }
     for (const message of batch.messages) {
       try {
         const emailRecord = batch.queue.includes('email')
