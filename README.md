@@ -78,3 +78,12 @@ Grant the first production administrator to an existing Account:
 pnpm scripts users promote-admin --stage production --database <d1-name-or-uuid> \
   --email <email> --confirm "PROMOTE <email>"
 ```
+
+Add a Bible by uploading its Digital Bible Library zip at `/admin/bible`. The background worker imports it through the `bible-import` queue (archive, then one message per book, then one per chapter), which takes a few minutes. A message that still fails after five retries is dead-lettered and summarized by email to administrators. Check progress with:
+
+```sh
+wrangler d1 execute <d1-name> --remote --command \
+  "select abbreviation, ready_for_publication, (select count(*) from chapters c where c.bible_abbreviation = b.abbreviation) chapters, (select count(*) from verses v where v.bible_abbreviation = b.abbreviation) verses from bibles b"
+```
+
+Imported Bibles stay hidden from Readers until `bibles.ready_for_publication` is set to `1`.
