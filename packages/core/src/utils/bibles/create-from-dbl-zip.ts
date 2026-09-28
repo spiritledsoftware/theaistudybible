@@ -1,24 +1,42 @@
 import { db } from '@/core/database';
 import * as schema from '@/core/database/schema';
-import { buildConflictUpdateColumns } from '@/core/database/utils';
+import { buildConflictUpdateColumns, maxInsertRows } from '@/core/database/utils';
 import { env } from '@/core/env';
+import { openDblBundle } from './dbl-bundle';
 import { eq, sql } from 'drizzle-orm';
 import { XMLBuilder, XMLParser } from 'fast-xml-parser';
-import JSZip from 'jszip';
+import type JSZip from 'jszip';
 import type { DBLMetadata, Publication } from './types';
-import { parseUsx } from './usx';
+import { parseUsx, type UsxBook } from './usx';
+
+/**
+ * A chapter's parsed content is up to ~340 KB, above the 128 KB Queues message
+ * limit, so it is staged in PRIVATE_SOURCES and the message carries its key.
+ */
 export type IndexChapterEvent = {
   bibleAbbreviation: string;
   bookCode: string;
   previousCode: string | undefined;
   nextCode: string | undefined;
   chapterNumber: string;
-  content: ReturnType<typeof parseUsx>[number];
+  contentKey: string;
+  generateEmbeddings: boolean;
+  overwrite: boolean;
+};
+
+/** One per book, so no invocation parses or stages the whole Bible. */
+export type IndexBookEvent = {
+  archiveKey: string;
+  bibleAbbreviation: string;
+  bookCode: string;
+  src: string;
   generateEmbeddings: boolean;
   overwrite: boolean;
 };
 
 type CreateBibleParams = {
+  /** PRIVATE_SOURCES key of the uploaded archive; book messages reread it. */
+  archiveKey: string;
   zipBuffer: Uint8Array;
   publicationId?: string;
   overwrite: boolean;
@@ -26,12 +44,13 @@ type CreateBibleParams = {
 };
 
 export async function createBibleFromDblZip({
+  archiveKey,
   zipBuffer,
   publicationId,
   overwrite,
   generateEmbeddings,
 }: CreateBibleParams) {
-  const zipFile = await JSZip.loadAsync(zipBuffer);
+  const zipFile = await openDblBundle(zipBuffer);
   const { metadata, publication } = await extractMetadataAndPublication(zipFile, publicationId);
   const abbreviation = publication.abbreviation ?? metadata.identification.abbreviation;
 
@@ -44,8 +63,41 @@ export async function createBibleFromDblZip({
   console.log(`Bible created with abbreviation ${bible.abbreviation}`);
 
   const bookInfos = getBookInfos(publication, metadata);
-  const newBooks = await createBooks(bible.abbreviation, bookInfos, overwrite);
-  await processBooks(zipFile, bible, newBooks, bookInfos, generateEmbeddings, overwrite);
+  const books = await createBooks(bible.abbreviation, bookInfos, overwrite);
+  const events = bookInfos.map((bookInfo) => {
+    const book = books.find((b) => b.code === bookInfo.code.toUpperCase());
+    if (!book) throw new Error(`Book ${bookInfo.code} not found`);
+    return {
+      archiveKey,
+      bibleAbbreviation: bible.abbreviation,
+      bookCode: book.code,
+      src: bookInfo.src,
+      generateEmbeddings,
+      overwrite,
+    } satisfies IndexBookEvent;
+  });
+  // Queues accepts at most 100 messages per sendBatch.
+  for (let i = 0; i < events.length; i += 100) {
+    await env.BIBLE_IMPORT_QUEUE.sendBatch(
+      events.slice(i, i + 100).map((event) => ({ body: { type: 'book' as const, ...event } })),
+    );
+  }
+}
+
+/** Parses one book of the archive and queues its chapters. */
+export async function stageBookChapters({
+  zipBuffer,
+  bibleAbbreviation,
+  bookCode,
+  src,
+  generateEmbeddings,
+  overwrite,
+}: Omit<IndexBookEvent, 'archiveKey'> & { zipBuffer: Uint8Array }) {
+  const zipFile = await openDblBundle(zipBuffer);
+  const bookFile = zipFile.file(src);
+  if (!bookFile) throw new Error(`Book file ${src} not found`);
+  const contents = parseUsx(await bookFile.async('text'));
+  await stageChapters(contents, bibleAbbreviation, bookCode, generateEmbeddings, overwrite);
 }
 
 async function extractMetadataAndPublication(zipFile: JSZip, publicationId?: string) {
@@ -289,7 +341,7 @@ async function createBooks(
   bookInfos: ReturnType<typeof getBookInfos>,
   overwrite: boolean,
 ) {
-  const batchSize = 50;
+  const batchSize = maxInsertRows(schema.books);
   const allBooks = [];
 
   for (let i = 0; i < bookInfos.length; i += batchSize) {
@@ -329,34 +381,10 @@ async function createBooks(
   return allBooks;
 }
 
-async function processBooks(
-  zipFile: JSZip,
-  bible: typeof schema.bibles.$inferSelect,
-  books: (typeof schema.books.$inferSelect)[],
-  bookInfos: ReturnType<typeof getBookInfos>,
-  generateEmbeddings: boolean,
-  overwrite: boolean,
-) {
-  for (const bookInfo of bookInfos) {
-    console.log(`Processing book: ${bookInfo.code}...`);
-    const book = books.find((b) => b.code === bookInfo.code);
-    if (!book) throw new Error(`Book ${bookInfo.code} not found`);
-
-    const bookFile = zipFile.file(bookInfo.src);
-    if (!bookFile) throw new Error(`Book file ${bookInfo.src} not found`);
-
-    const bookXml = await bookFile.async('text');
-    const contents = parseUsx(bookXml);
-
-    console.log('Book content parsed, sending chapters to queue...');
-    await sendChaptersToIndexBucket(contents, bible, book, generateEmbeddings, overwrite);
-  }
-}
-
-async function sendChaptersToIndexBucket(
-  contents: ReturnType<typeof parseUsx>,
-  bible: typeof schema.bibles.$inferSelect,
-  book: typeof schema.books.$inferSelect,
+async function stageChapters(
+  contents: UsxBook,
+  bibleAbbreviation: string,
+  bookCode: string,
   generateEmbeddings: boolean,
   overwrite: boolean,
 ) {
@@ -364,20 +392,26 @@ async function sendChaptersToIndexBucket(
   const batchSize = 50;
   for (let i = 0; i < entries.length; i += batchSize) {
     const batch = entries.slice(i, i + batchSize);
-    const messages = batch.map(([chapterNumber, content], idx) => {
-      const previousNumber = entries[i + idx - 1]?.[0];
-      const nextNumber = entries[i + idx + 1]?.[0];
-      return {
-        bibleAbbreviation: bible.abbreviation,
-        bookCode: book.code,
-        previousCode: previousNumber ? `${book.code}.${previousNumber}` : undefined,
-        nextCode: nextNumber ? `${book.code}.${nextNumber}` : undefined,
-        chapterNumber,
-        content,
-        generateEmbeddings,
-        overwrite,
-      } satisfies IndexChapterEvent;
-    });
+    const messages = await Promise.all(
+      batch.map(async ([chapterNumber, content], idx) => {
+        const previousNumber = entries[i + idx - 1]?.[0];
+        const nextNumber = entries[i + idx + 1]?.[0];
+        const contentKey = `bible-imports/${bibleAbbreviation}/${bookCode}/${chapterNumber}.json`;
+        await env.PRIVATE_SOURCES.put(contentKey, JSON.stringify(content), {
+          httpMetadata: { contentType: 'application/json' },
+        });
+        return {
+          bibleAbbreviation,
+          bookCode,
+          previousCode: previousNumber ? `${bookCode}.${previousNumber}` : undefined,
+          nextCode: nextNumber ? `${bookCode}.${nextNumber}` : undefined,
+          chapterNumber,
+          contentKey,
+          generateEmbeddings,
+          overwrite,
+        } satisfies IndexChapterEvent;
+      }),
+    );
 
     await env.BIBLE_IMPORT_QUEUE.sendBatch(
       messages.map((message) => ({

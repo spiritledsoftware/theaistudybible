@@ -9,7 +9,7 @@ import {
   usersToRoles,
 } from '@/core/database/schema';
 import { env, type RuntimeEnv } from '@/core/env';
-import { createBibleFromDblZip } from '@/core/utils/bibles/create-from-dbl-zip';
+import { createBibleFromDblZip, stageBookChapters } from '@/core/utils/bibles/create-from-dbl-zip';
 import { insertChapter, insertVerses } from '@/core/utils/bibles/index-chapter';
 import { generateChapterEmbeddings } from '@/core/utils/bibles/generate-chapter-embeddings';
 import { queueEmailBatch } from '@/core/utils/email';
@@ -59,10 +59,26 @@ const chapterMessageSchema = z.object({
   previousCode: z.string().optional(),
   nextCode: z.string().optional(),
   chapterNumber: z.string().min(1),
-  content: chapterContentSchema,
+  contentKey: z.string().min(1),
   generateEmbeddings: z.boolean(),
   overwrite: z.boolean(),
 });
+
+const bookMessageSchema = z.object({
+  type: z.literal('book'),
+  archiveKey: z.string().min(1),
+  bibleAbbreviation: z.string().min(1),
+  bookCode: z.string().min(1),
+  src: z.string().min(1),
+  generateEmbeddings: z.boolean(),
+  overwrite: z.boolean(),
+});
+
+const bibleImportMessageSchema = z.discriminatedUnion('type', [
+  archiveMessageSchema,
+  bookMessageSchema,
+  chapterMessageSchema,
+]);
 
 async function runIdempotentQueueEffect(
   queue: string,
@@ -150,21 +166,33 @@ async function handleDeadLetterBatch(batch: MessageBatch) {
   batch.ackAll();
 }
 
+async function readArchive(key: string) {
+  const object = await env.PRIVATE_SOURCES.get(key);
+  if (!object) throw new Error('Bible archive not found');
+  return new Uint8Array(await object.arrayBuffer());
+}
+
 async function processBibleMessage(input: unknown) {
-  const archive = archiveMessageSchema.safeParse(input);
-  if (archive.success) {
-    const object = await env.PRIVATE_SOURCES.get(archive.data.key);
-    if (!object) throw new Error('Bible archive not found');
+  const message = bibleImportMessageSchema.parse(input);
+  if (message.type === 'archive') {
     await createBibleFromDblZip({
-      zipBuffer: new Uint8Array(await object.arrayBuffer()),
+      archiveKey: message.key,
+      zipBuffer: await readArchive(message.key),
       overwrite: true,
-      publicationId: archive.data.publicationId,
-      generateEmbeddings: archive.data.generateEmbeddings,
+      publicationId: message.publicationId,
+      generateEmbeddings: message.generateEmbeddings,
     });
     return;
   }
+  if (message.type === 'book') {
+    const { archiveKey, type: _type, ...book } = message;
+    await stageBookChapters({ ...book, zipBuffer: await readArchive(archiveKey) });
+    return;
+  }
 
-  const message = chapterMessageSchema.parse(input);
+  const staged = await env.PRIVATE_SOURCES.get(message.contentKey);
+  if (!staged) throw new Error('Staged chapter content not found');
+  const content = chapterContentSchema.parse(await staged.json());
   const bibleData = await db.query.bibles.findFirst({
     where: (bibles, { eq: equals }) => equals(bibles.abbreviation, message.bibleAbbreviation),
     with: { books: { where: (books, { eq: equals }) => equals(books.code, message.bookCode) } },
@@ -180,14 +208,14 @@ async function processBibleMessage(input: unknown) {
     previousCode: message.previousCode,
     nextCode: message.nextCode,
     chapterNumber: message.chapterNumber,
-    contents: message.content,
+    contents: content,
     overwrite: message.overwrite,
   });
   const verses = await insertVerses({
     bible,
     book,
     chapter,
-    content: message.content,
+    content,
     overwrite: message.overwrite,
   });
   if (message.generateEmbeddings) {
@@ -197,11 +225,12 @@ async function processBibleMessage(input: unknown) {
       chapter,
       verses: verses.map((verse) => ({
         ...verse,
-        content: message.content.verseContents[verse.number]?.contents ?? [],
+        content: content.verseContents[verse.number]?.contents ?? [],
       })),
       overwrite: message.overwrite,
     });
   }
+  await env.PRIVATE_SOURCES.delete(message.contentKey);
 }
 
 async function sendPushNotification(input: unknown, idempotencyKey?: string) {

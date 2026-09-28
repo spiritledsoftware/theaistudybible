@@ -31,6 +31,9 @@ export type ParserState = {
   chapterNumber?: number;
   verseNumber?: number;
   owningObjId?: string;
+  /** One collision-resistant id per parse; content ids append a counter to it. */
+  idPrefix: string;
+  idCount: number;
   contents: {
     [key: number]: {
       contents: Content[];
@@ -43,9 +46,14 @@ export type ParserState = {
   };
 };
 
-export function parseUsx(xmlString: string) {
+/** Parsed chapters of one USX book, keyed by chapter number. */
+export type UsxBook = ParserState['contents'];
+export type UsxChapter = UsxBook[number];
+
+export function parseUsx(xmlString: string): UsxBook {
+  // DBL exports often start USX files with a UTF-8 byte-order mark, which xmldom rejects.
   const doc = new DOMParser({ onError: onErrorStopParsing }).parseFromString(
-    xmlString,
+    xmlString.replace(/^\uFEFF/, ''),
     MIME_TYPE.XML_APPLICATION,
   );
   const usx = doc.documentElement;
@@ -58,6 +66,8 @@ export function parseUsx(xmlString: string) {
   }
 
   const state: ParserState = {
+    idPrefix: createId(),
+    idCount: 0,
     contents: {},
   };
 
@@ -95,7 +105,7 @@ export function parseUsx(xmlString: string) {
 
       const para: ParaContent = {
         type: 'para',
-        id: `para_${createId()}`,
+        id: nextId(state, 'para'),
         attrs: element.attributes
           ? Array.from(element.attributes).reduce(
               (acc, { name: key }) => {
@@ -122,6 +132,11 @@ export function parseUsx(xmlString: string) {
   return state.contents;
 }
 
+// cuid2 hashes on every call (~0.25 ms) and a book has tens of thousands of nodes.
+function nextId(state: ParserState, kind: string) {
+  return `${kind}_${state.idPrefix}${(state.idCount++).toString(36)}`;
+}
+
 export function parseContents(state: ParserState, nodes: NodeList<Node>) {
   for (const node of Array.from(nodes)) {
     if (node.nodeType === 3) {
@@ -136,7 +151,7 @@ export function parseContents(state: ParserState, nodes: NodeList<Node>) {
 
       addContent(state, {
         type: 'text',
-        id: `txt_${createId()}`,
+        id: nextId(state, 'txt'),
         verseNumber: state.verseNumber,
         text: text.replaceAll('\n', ''),
         attrs: element.attributes
@@ -175,7 +190,7 @@ export function parseContents(state: ParserState, nodes: NodeList<Node>) {
 
       addContent(state, {
         type: 'verse',
-        id: `ver_${createId()}`,
+        id: nextId(state, 'ver'),
         number: verseNumber,
         attrs: element.attributes
           ? Array.from(element.attributes).reduce(
@@ -198,7 +213,7 @@ export function parseContents(state: ParserState, nodes: NodeList<Node>) {
 
       const char: CharContent = {
         type: element.nodeName as 'char',
-        id: `char_${createId()}`,
+        id: nextId(state, 'char'),
         verseNumber: state.verseNumber,
         attrs: element.attributes
           ? Array.from(element.attributes).reduce(
@@ -228,7 +243,7 @@ export function parseContents(state: ParserState, nodes: NodeList<Node>) {
 
       const note: NoteContent = {
         type: element.nodeName as 'note',
-        id: `note_${createId()}`,
+        id: nextId(state, 'note'),
         verseNumber: state.verseNumber,
         attrs: element.attributes
           ? Array.from(element.attributes).reduce(
@@ -258,7 +273,7 @@ export function parseContents(state: ParserState, nodes: NodeList<Node>) {
 
       addContent(state, {
         type: 'ref',
-        id: `ref_${createId()}`,
+        id: nextId(state, 'ref'),
         verseNumber: state.verseNumber,
         text: element.textContent ?? '',
         attrs: element.attributes

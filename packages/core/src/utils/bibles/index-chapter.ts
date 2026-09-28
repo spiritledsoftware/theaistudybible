@@ -1,9 +1,9 @@
 import { db } from '@/core/database';
 import { type bibles, type books, chapters, verses } from '@/core/database/schema';
-import { buildConflictUpdateColumns } from '@/core/database/utils';
+import { buildConflictUpdateColumns, maxInsertRows } from '@/core/database/utils';
 import type { Bible, Book } from '@/schemas/bibles/types';
 import { getTableColumns, sql } from 'drizzle-orm';
-import type { parseUsx } from './usx';
+import type { UsxChapter } from './usx';
 
 export async function insertChapter({
   bible,
@@ -19,7 +19,7 @@ export async function insertChapter({
   previousCode: string | undefined;
   nextCode: string | undefined;
   chapterNumber: string;
-  contents: ReturnType<typeof parseUsx>[number];
+  contents: UsxChapter;
   overwrite: boolean;
 }) {
   const { content, ...columnsWithoutContent } = getTableColumns(chapters);
@@ -61,7 +61,7 @@ export async function insertVerses({
   bible: typeof bibles.$inferSelect;
   book: typeof books.$inferSelect;
   chapter: Omit<typeof chapters.$inferSelect, 'content'>;
-  content: ReturnType<typeof parseUsx>[number];
+  content: UsxChapter;
   overwrite: boolean;
 }) {
   const { content: verseContent, ...columnsWithoutContent } = getTableColumns(verses);
@@ -69,8 +69,9 @@ export async function insertVerses({
     ([left], [right]) => Number(left) - Number(right),
   );
   const allVerses: Omit<typeof verses.$inferSelect, 'content'>[] = [];
-  for (let offset = 0; offset < verseEntries.length; offset += 50) {
-    const batch = verseEntries.slice(offset, offset + 50);
+  const batchSize = maxInsertRows(verses);
+  for (let offset = 0; offset < verseEntries.length; offset += batchSize) {
+    const batch = verseEntries.slice(offset, offset + batchSize);
     const insertedVerses = await db
       .insert(verses)
       .values(

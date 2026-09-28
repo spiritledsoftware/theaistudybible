@@ -1,5 +1,6 @@
 import { db } from '@/core/database';
 import { sourceDocuments } from '@/core/database/schema';
+import { D1_MAX_BOUND_PARAMETERS, maxInsertRows } from '@/core/database/utils';
 import { inArray } from 'drizzle-orm';
 import { env } from '@/core/env';
 import type { Embeddings } from './embeddings';
@@ -102,10 +103,7 @@ export class VectorStore {
         options.overwrite
           ? env.SCRIPTURE_INDEX.upsert(vectors)
           : env.SCRIPTURE_INDEX.insert(vectors),
-        db
-          .insert(sourceDocuments)
-          .values(batch.map(({ id }) => ({ id })))
-          .onConflictDoNothing(),
+        insertSourceDocumentIds(batch.map(({ id }) => id)),
       ]);
     }
     return docsWithEmbeddings.map(({ id }) => id);
@@ -118,10 +116,7 @@ export class VectorStore {
         i * VectorStore.MAX_DELETE_BATCH_SIZE,
         (i + 1) * VectorStore.MAX_DELETE_BATCH_SIZE,
       );
-      await Promise.all([
-        env.SCRIPTURE_INDEX.deleteByIds(batch),
-        db.delete(sourceDocuments).where(inArray(sourceDocuments.id, batch)),
-      ]);
+      await Promise.all([env.SCRIPTURE_INDEX.deleteByIds(batch), deleteSourceDocumentIds(batch)]);
     }
   }
 
@@ -180,3 +175,21 @@ export class VectorStore {
 }
 
 export const vectorStore = new VectorStore(embeddings);
+
+async function insertSourceDocumentIds(ids: string[]) {
+  const size = maxInsertRows(sourceDocuments);
+  for (let i = 0; i < ids.length; i += size) {
+    await db
+      .insert(sourceDocuments)
+      .values(ids.slice(i, i + size).map((id) => ({ id })))
+      .onConflictDoNothing();
+  }
+}
+
+async function deleteSourceDocumentIds(ids: string[]) {
+  for (let i = 0; i < ids.length; i += D1_MAX_BOUND_PARAMETERS) {
+    await db
+      .delete(sourceDocuments)
+      .where(inArray(sourceDocuments.id, ids.slice(i, i + D1_MAX_BOUND_PARAMETERS)));
+  }
+}

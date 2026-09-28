@@ -1,6 +1,7 @@
 import { vectorStore } from '@/ai/vector-store';
 import { db } from '@/core/database';
 import { chaptersToSourceDocuments } from '@/core/database/schema';
+import { maxInsertRows } from '@/core/database/utils';
 import type { Bible, Book, Chapter, Verse } from '@/schemas/bibles/types';
 import { versesToDocs } from './verses-to-docs';
 
@@ -33,8 +34,8 @@ export const generateChapterEmbeddings = async ({
     verses,
   });
 
-  // Process documents in smaller batches
-  const batchSize = 100;
+  // Each batch's links go into one insert, so it is sized to D1's parameter limit.
+  const batchSize = maxInsertRows(chaptersToSourceDocuments);
   for (let i = 0; i < docs.length; i += batchSize) {
     const batch = docs.slice(i, i + batchSize);
     await vectorStore.addDocuments(batch, { overwrite });
