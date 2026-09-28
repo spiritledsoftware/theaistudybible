@@ -43,13 +43,16 @@ describe('Devotion Pages', () => {
     cy.get('h2').contains('Prayer').scrollIntoView().should('be.visible');
   });
 
-  it('navigates through devotion history using the sidebar', () => {
-    // The devotion page renders the sidebar whether or not the devotion exists.
+  it('opens and closes the devotion history sheet', () => {
+    // The devotion page renders the history sheet whether or not the devotion exists, and
+    // opens it on load.
+    const sheet = '[data-slot="sidebar"][data-mobile="true"]';
     cy.visit(latestDevotionPath ?? '/devotion/non-existent-id');
+    cy.get(sheet).should('be.visible').and('contain.text', 'Devotion History');
+    cy.get('body').type('{esc}');
+    cy.get(sheet).should('not.exist');
     cy.get('button[aria-label="View Devotions"]').should('be.enabled').click();
-    cy.get('div[data-variant="sidebar"]').should('be.visible');
-    cy.get('button[aria-label="View Devotions"]').should('be.enabled').click();
-    cy.get('div[data-variant="sidebar"]').should('not.be.visible');
+    cy.get(sheet).should('be.visible');
   });
 
   it('handles non-existent devotion gracefully', () => {

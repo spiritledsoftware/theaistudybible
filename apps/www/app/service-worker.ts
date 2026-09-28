@@ -1,9 +1,5 @@
 import { clientsClaim } from 'workbox-core';
-import {
-  cleanupOutdatedCaches,
-  createHandlerBoundToURL,
-  precacheAndRoute,
-} from 'workbox-precaching';
+import { cleanupOutdatedCaches, matchPrecache, precacheAndRoute } from 'workbox-precaching';
 import { NavigationRoute, registerRoute } from 'workbox-routing';
 
 declare let self: ServiceWorkerGlobalScope;
@@ -14,7 +10,20 @@ cleanupOutdatedCaches();
 let allowlist: RegExp[] | undefined;
 if (import.meta.env.DEV) allowlist = [/^\/$/];
 
-registerRoute(new NavigationRoute(createHandlerBoundToURL('/'), { allowlist }));
+// Pages are server-rendered per request and per Reader, so navigations always go to the
+// network. The precached '/' shell is only the offline fallback.
+registerRoute(
+  new NavigationRoute(
+    async ({ request }) => {
+      try {
+        return await fetch(request);
+      } catch {
+        return (await matchPrecache('/')) ?? Response.error();
+      }
+    },
+    { allowlist },
+  ),
+);
 
 self.skipWaiting();
 clientsClaim();
