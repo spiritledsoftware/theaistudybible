@@ -54,8 +54,14 @@ export const buildConflictUpdateColumns = <
 /** D1 rejects any statement with more than 100 bound parameters. */
 export const D1_MAX_BOUND_PARAMETERS = 100;
 
-/** Rows one multi-row insert into `table` can carry: every column binds one parameter per row. */
-export const maxInsertRows = (table: SQLiteTable) =>
-  Math.floor(D1_MAX_BOUND_PARAMETERS / Object.keys(getTableColumns(table)).length);
+/**
+ * Rows one multi-row insert (or upsert) into `table` can carry: every column
+ * binds one parameter per row, and an upsert's SET binds one per `$onUpdateFn` column.
+ */
+export const maxInsertRows = (table: SQLiteTable) => {
+  const columns = Object.values(getTableColumns(table));
+  const onUpdate = columns.filter((column) => column.onUpdateFn).length;
+  return Math.floor((D1_MAX_BOUND_PARAMETERS - onUpdate) / columns.length);
+};
 
 export const ilike = (column: Column, value: string) => sql`LOWER(${column}) LIKE LOWER(${value})`;
