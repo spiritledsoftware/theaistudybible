@@ -4,14 +4,13 @@ import { NavigationRoute, registerRoute } from 'workbox-routing';
 
 declare let self: ServiceWorkerGlobalScope;
 
-precacheAndRoute(self.__WB_MANIFEST);
-cleanupOutdatedCaches();
-
 let allowlist: RegExp[] | undefined;
 if (import.meta.env.DEV) allowlist = [/^\/$/];
 
 // Pages are server-rendered per request and per Reader, so navigations always go to the
-// network. The precached '/' shell is only the offline fallback.
+// network. The precached '/' shell is only the offline fallback. Workbox uses the first
+// matching route, so this must be registered before the precache route, which would
+// otherwise answer navigations to '/' with the shell cached at install time.
 registerRoute(
   new NavigationRoute(
     async ({ request }) => {
@@ -24,6 +23,9 @@ registerRoute(
     { allowlist },
   ),
 );
+
+precacheAndRoute(self.__WB_MANIFEST);
+cleanupOutdatedCaches();
 
 self.skipWaiting();
 clientsClaim();
