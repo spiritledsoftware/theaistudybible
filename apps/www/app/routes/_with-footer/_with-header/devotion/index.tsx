@@ -6,8 +6,8 @@ import { Navigate, createFileRoute } from '@tanstack/react-router';
 import { createServerFn } from '@tanstack/react-start';
 
 export const Route = createFileRoute('/_with-footer/_with-header/devotion/')({
-  loader: ({ context }) => {
-    context.queryClient.prefetchQuery(getLatestDevotionQueryOptions);
+  loader: async ({ context }) => {
+    await context.queryClient.prefetchQuery(getLatestDevotionQueryOptions);
   },
   component: RouteComponent,
 });

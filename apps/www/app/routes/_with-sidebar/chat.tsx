@@ -5,13 +5,13 @@ import { Navigate, createFileRoute, redirect } from '@tanstack/react-router';
 import { z } from 'zod';
 
 export const Route = createFileRoute('/_with-sidebar/chat')({
-  beforeLoad: ({ context, location }) => {
+  beforeLoad: async ({ context, location }) => {
     if (!context.user) {
       throw redirect({ to: '/sign-in', search: { redirectUrl: location.href } });
     }
 
     const qc = context.queryClient;
-    qc.prefetchInfiniteQuery(getChatsQueryOptions());
+    await qc.prefetchInfiniteQuery(getChatsQueryOptions());
   },
   validateSearch: z.object({
     query: z.string().optional(),

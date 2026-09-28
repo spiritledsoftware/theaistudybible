@@ -16,9 +16,11 @@ import { getAuth } from '../server/functions/auth';
 import { getSubscription } from '../server/functions/pro';
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
-  beforeLoad: async () => {
-    const [{ auth }, { subscription, type }] = await Promise.all([getAuth(), getSubscription()]);
-    return { ...auth, subscription, subscriptionType: type };
+  beforeLoad: async ({ context }) => {
+    const [authResult, { subscription, type }] = await Promise.all([getAuth(), getSubscription()]);
+    // Seed useAuth's query so the server-rendered auth UI matches the client's first render.
+    context.queryClient.setQueryData(['auth'], authResult);
+    return { ...authResult.auth, subscription, subscriptionType: type };
   },
   head: () => {
     return {

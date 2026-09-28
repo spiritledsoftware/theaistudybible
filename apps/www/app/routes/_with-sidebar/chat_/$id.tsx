@@ -10,9 +10,9 @@ export const Route = createFileRoute('/_with-sidebar/chat_/$id')({
   validateSearch: z.object({
     query: z.string().optional(),
   }),
-  beforeLoad: ({ params, context }) => {
+  beforeLoad: async ({ params, context }) => {
     const qc = context.queryClient;
-    Promise.all([
+    await Promise.all([
       qc.prefetchQuery(getChatQueryProps(params.id)),
       qc.prefetchInfiniteQuery(getChatMessagesQueryProps(params.id)),
     ]);
