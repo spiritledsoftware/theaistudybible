@@ -68,6 +68,8 @@ pnpm exec alchemy deploy infra/github.run.ts --stage staging --env-file .env.sta
 pnpm exec alchemy deploy infra/github.run.ts --stage preview --env-file .env.staging
 ```
 
+Variables left blank in the file are skipped, so a secret set directly with `gh secret set <NAME> --env <environment>` is kept. The post-deploy Cypress smoke tests sign in as `TEST_USER_EMAIL`, an ordinary Account that must already exist in that stage's database.
+
 Deploy a stage by hand with `pnpm exec alchemy deploy alchemy.run.ts --stage <stage> --env-file <file>`. The operator's `CLOUDFLARE_API_TOKEN` needs Account API Tokens Write, Email Sending Write, Email Routing Addresses Write and Email Routing Rules Write in addition to the deploy permissions.
 
 Grant the first production administrator to an existing Account:
