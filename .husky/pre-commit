@@ -1,2 +1,1 @@
-pnpm run format:check
-pnpm run lint:fix
+pnpm exec biome check --staged --no-errors-on-unmatched
