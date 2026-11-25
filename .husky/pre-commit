@@ -1,2 +1,2 @@
-pnpm run format:check
-pnpm run lint:fix
+pnpm exec biome check --staged --write --no-errors-on-unmatched
+git update-index --again
